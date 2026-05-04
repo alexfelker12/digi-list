@@ -1,5 +1,5 @@
 import { db } from '@/server/db';
-import type { NewItem } from '@/server/db/schema';
+import type { ItemFormValues } from '@/server/db/schema';
 import { items, parseImageUris, stringifyImageUris } from '@/server/db/schema';
 import { mutationOptions, queryOptions, useQueryClient } from '@tanstack/react-query';
 import { eq } from 'drizzle-orm';
@@ -41,7 +41,7 @@ export const dynamicItemMutationOptions = (id: number | undefined) => id
 export const createItemMutationOptions = () => {
   const qc = useQueryClient();
   return mutationOptions({
-    mutationFn: async (data: Omit<NewItem, 'id' | 'imageUris'> & { imageUris?: string[] }) => {
+    mutationFn: async (data: ItemFormValues) => {
       const { imageUris, ...rest } = data;
       const [created] = await db.insert(items)
         .values({
@@ -59,7 +59,7 @@ export const updateItemMutationOptions = (id: number) => {
   const qc = useQueryClient();
 
   return mutationOptions({
-    mutationFn: async (data: Omit<NewItem, 'imageUris'> & { imageUris?: string[] }) => {
+    mutationFn: async (data: ItemFormValues) => {
       const { imageUris, ...rest } = data;
       const [created] = await db.update(items)
         .set({

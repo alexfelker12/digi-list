@@ -15,24 +15,10 @@ import { StatusBar } from "expo-status-bar";
 
 import { ErrorScreen } from "@/components/error-screen";
 import { LoadingScreen } from "@/components/loading-screen";
-// import { useEffect, useState } from "react";
 
 
 function MigrationsGuard({ children }: { children: React.ReactNode }) {
   const { success, error } = useMigrations(db, migrations)
-
-  // // — Mock: delay & error —
-  // const [mockReady, setMockReady] = useState(false);
-  // const mockError = false; // auf true setzen um ErrorScreen zu testen
-
-  // useEffect(() => {
-  //   const timer = setTimeout(() => setMockReady(true), 3000);
-  //   return () => clearTimeout(timer);
-  // }, []);
-
-  // if (mockError) return <ErrorScreen message="Mock: Datenbank konnte nicht migriert werden." />;
-  // if (!mockReady) return <LoadingScreen />;
-  // // — Ende Mock —
 
   if (!success && !error) return <LoadingScreen />
   if (error) return <ErrorScreen message={error.message} />

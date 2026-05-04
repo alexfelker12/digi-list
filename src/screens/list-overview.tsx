@@ -1,16 +1,21 @@
-import { ItemFormSheet } from "@/components/item-form-sheet";
+import { ItemForm } from "@/components/item-form";
 import { ScreenLayout } from "@/components/screen-layout";
 import { Text } from "@/components/text";
-import { allItemsOptions } from "@/lib/list-queries";
-import { useQuery } from "@tanstack/react-query";
+import { allItemsOptions, createItemMutationOptions } from "@/lib/list-queries";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { ActivityIndicator, View } from "react-native";
 
 
 export default function ListOverviewScreen() {
+  const { mutateAsync, isPending } = useMutation(createItemMutationOptions());
 
   return (
     <ScreenLayout title="Einkaufslisten">
-      <ItemFormSheet />
+      <ItemForm
+        onSubmit={async (values) => {
+          mutateAsync(values)
+        }}
+      />
 
       <ItemsListing />
     </ScreenLayout>
@@ -29,8 +34,8 @@ function ItemsListing() {
 
       <View className="flex-col gap-2">
         {data && data.map((item) => (
-          <View key={item.id} className="border border-border p-2 rounded-md bg-surface-secondary">
-            <Text>{item.name}</Text>
+          <View key={item.id} className="border border-border p-2 rounded-md bg-surface-secondary flex-row gap-2">
+            <Text>{item.name} - {item.quantity} {item.unit} - {item.notes}</Text>
           </View>
         ))}
       </View>

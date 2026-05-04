@@ -1,0 +1,21 @@
+import { Text } from "@/components/text";
+import { View } from "react-native";
+
+
+interface ErrorScreenProps {
+  message?: string;
+}
+export function ErrorScreen({ message }: ErrorScreenProps) {
+  return (
+    <View className="flex-1 items-center justify-center gap-2 bg-background px-8">
+      <Text className="text-danger text-base font-semibold">
+        Etwas ist schiefgelaufen
+      </Text>
+      {message && (
+        <Text className="text-muted text-sm text-center">
+          {message}
+        </Text>
+      )}
+    </View>
+  );
+}

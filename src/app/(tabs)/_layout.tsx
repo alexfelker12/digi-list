@@ -1,39 +1,144 @@
-import { Stack } from "expo-router";
-import { SQLiteProvider } from 'expo-sqlite';
-import { Text } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { Ref, useEffect, useRef, useState } from "react";
+import { Animated, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { HeroUINativeProvider } from 'heroui-native/provider';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import {
+  TabList as CustomTabList,
+  Tabs as CustomTabs,
+  TabSlot as CustomTabSlot,
+  TabTrigger as CustomTabTrigger,
+  TabTriggerSlotProps
+} from 'expo-router/ui';
+import { useThemeColor } from 'heroui-native';
+import { Tabs } from "heroui-native/tabs";
 
-import { db } from "@/server/db";
-import migrations from '@/server/db/migrations/migrations';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 
-import '@/global.css'; // TODO: check if is importet correctly, else use ../../global.css
+const ANIMATION_DURATION = 150
+export default function TabLayout() {
+  const [value, setValue] = useState("1")
+  const { bottom } = useSafeAreaInsets();
 
+  return (
+    <CustomTabs>
+      <CustomTabSlot />
 
-function MigrationsGuard({ children }: { children: React.ReactNode }) {
-  // useMigrations braucht die expo db-Instanz direkt
-  const { success, error } = useMigrations(db, migrations);
-  if (!success && !error) return <Text>Wird geladen…</Text>;
-  if (error) return <Text>DB Fehler: {error.message}</Text>;
-  return <>{children}</>;
+      {/* Hidden TabList — just defines routes, no UI */}
+      <CustomTabList className="hidden">
+        <CustomTabTrigger name="home" href="/" />
+        <CustomTabTrigger name="send" href="/(tabs)/send" />
+        <CustomTabTrigger name="receive" href="/(tabs)/receive" />
+      </CustomTabList>
+
+      {/* Visual tab bar using HeroUI, with TabTriggers outside TabList */}
+      <Tabs
+        className="absolute bottom-0 left-0 right-0 p-2 bg-linear-to-t from-background via-background/50 to-background/0"
+        style={{ paddingBottom: bottom }}
+        value={value}
+        onValueChange={setValue}
+      >
+        <Tabs.List>
+          <Tabs.Indicator
+            animation={{
+              translateX: { type: "timing", config: { duration: ANIMATION_DURATION } },
+            }}
+          />
+
+          <CustomTabTrigger name="home" asChild>
+            <SyncedTabsTrigger
+              icon="home"
+              label="Einkaufslisten"
+              value="1"
+              onFocusChange={setValue}
+            />
+          </CustomTabTrigger>
+
+          <Tabs.Separator
+            betweenValues={['1', '2']}
+            animation={{
+              opacity: { timingConfig: { duration: ANIMATION_DURATION } }
+            }}
+          />
+
+          <CustomTabTrigger name="send" asChild>
+            <SyncedTabsTrigger
+              icon="paper-plane"
+              label="Senden"
+              value="2"
+              onFocusChange={setValue}
+            />
+          </CustomTabTrigger>
+
+          <Tabs.Separator
+            betweenValues={['2', '3']}
+            animation={{
+              opacity: { timingConfig: { duration: ANIMATION_DURATION } }
+            }}
+          />
+
+          <CustomTabTrigger name="receive" asChild>
+            <SyncedTabsTrigger
+              icon="download-outline"
+              label="Empfangen"
+              value="3"
+              onFocusChange={setValue}
+            />
+          </CustomTabTrigger>
+
+        </Tabs.List>
+      </Tabs>
+
+    </CustomTabs>
+  );
 }
 
-const queryClient = new QueryClient();
-export default function RootLayout() {
+type SyncedTabsTriggerProps = TabTriggerSlotProps & {
+  value: string
+  onFocusChange: (value: string) => void
+  label: string
+  icon: React.ComponentProps<typeof Ionicons>["name"]
+  ref?: Ref<View>
+};
+export function SyncedTabsTrigger({
+  icon,
+  label,
+  isFocused,
+  value,
+  onFocusChange,
+  ...props
+}: SyncedTabsTriggerProps) {
+  const [primary, muted, foreground] = useThemeColor(["accent", "muted", "foreground"]);
+  const focusAnimation = useRef(new Animated.Value(isFocused ? 1 : 0)).current;
+
+  useEffect(() => {
+    if (isFocused) onFocusChange(value);
+    Animated.timing(focusAnimation, {
+      toValue: isFocused ? 1 : 0,
+      duration: ANIMATION_DURATION,
+      useNativeDriver: false, // color interpolation requires false
+    }).start();
+  }, [isFocused]);
+
+  const iconColor = focusAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [muted, primary],
+  });
+
+  const textColor = focusAnimation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [muted, foreground],
+  });
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <SQLiteProvider databaseName="digi-list.db">
-        <MigrationsGuard>
-          <GestureHandlerRootView style={{ flex: 1 }}>
-            <HeroUINativeProvider>
-              <Stack />
-            </HeroUINativeProvider>
-          </GestureHandlerRootView>
-        </MigrationsGuard>
-      </SQLiteProvider>
-    </QueryClientProvider>
+    <Tabs.Trigger className="flex-1" value={value} {...props}>
+      <View className="flex-1 flex-col gap-0.5 items-center">
+        <Animated.Text style={{ color: iconColor }}>
+          <Ionicons size={24} name={icon} />
+        </Animated.Text>
+        <Animated.Text className="text-sm" style={{ color: textColor }} numberOfLines={1}>
+          {label}
+        </Animated.Text>
+      </View>
+    </Tabs.Trigger>
   );
 }

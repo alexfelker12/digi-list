@@ -40,7 +40,6 @@ export type Item = typeof items.$inferSelect;
 export type NewItem = typeof items.$inferInsert;
 export type ListItem = typeof listItems.$inferSelect;
 export type Unit = NonNullable<Item['unit']>;
-
 export const UNITS: Unit[] = ['kg', 'g', 'l', 'ml', 'Stk', 'Pkg', 'EL', 'TL'];
 
 export const parseImageUris = (raw: string | null | undefined): string[] => {
@@ -51,8 +50,40 @@ export const parseImageUris = (raw: string | null | undefined): string[] => {
 export const stringifyImageUris = (uris: string[]): string => JSON.stringify(uris);
 
 export const itemInsertSchema = createInsertSchema(items, {
+  // Felder überschreiben oder mit Validierung versehen
+  name: z.string()
+    .min(1, "Bitte Name des Produkts angeben")
+    .max(100, "Nicht mehr als 100 Zeichen erlaubt"),
+  quantity: z.number({
+    error: (issue) => {
+      if (issue.code === "invalid_type") return "Bitte Menge angeben"
+    }
+  })
+    .min(0, "Bitte Menge angeben")
+    .nonoptional(),
+  unit: z.enum(UNITS, "Bitte Einheit angeben")
+    .nonoptional(),
+  notes: z.string()
+    .max(500, "Nicht mehr als 500 Zeichen erlaubt")
+    .nullable(),
+
   // imageUris als Array statt String — wir parsen es im Formular
   imageUris: z.array(z.string()).optional(),
 });
 
-export type ItemFormValues = z.infer<typeof itemInsertSchema>;
+export type ItemFormInput = Omit<ItemFormValues, 'quantity' | 'unit'> & {
+  quantity: number | null;
+  unit: Unit | null;
+};
+export type ItemFormValues = z.output<typeof itemInsertSchema>;
+
+export const unitMap: Record<Unit, string> = {
+  kg: 'Kilogramm',
+  g: 'Gramm',
+  l: 'Liter',
+  ml: 'Milliliter',
+  Stk: 'Stück',
+  Pkg: 'Packung',
+  EL: 'Esslöffel',
+  TL: 'Teelöffel'
+}

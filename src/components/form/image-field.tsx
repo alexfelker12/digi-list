@@ -1,8 +1,11 @@
-import { Text } from '@/components/text';
 import { useFieldContext } from '@/lib/form';
 import { Ionicons } from '@expo/vector-icons';
+import { Image } from "expo-image";
 import * as ImagePicker from 'expo-image-picker';
-import { Alert, Image, Pressable, View } from 'react-native';
+import { Button, Label, TextField } from "heroui-native";
+import { Alert, Pressable, View } from 'react-native';
+import { Icon } from "../icon";
+import { Text } from "../text";
 
 
 export function ImageFieldComponent() {
@@ -16,7 +19,7 @@ export function ImageFieldComponent() {
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ["images"],
       allowsMultipleSelection: true,
       quality: 0.8,
     });
@@ -38,16 +41,23 @@ export function ImageFieldComponent() {
   }
 
   return (
-    <View className="mb-3">
-      <Text className="text-sm text-muted mb-1">Bilder</Text>
+    <TextField>
+      <Label className="text-sm text-muted">Bilder</Label>
 
-      {uris.length > 0 && (
+      {uris.length > 0 ? (
         <View className="flex-row flex-wrap gap-2 mb-2">
           {uris.map((uri) => (
-            <View key={uri} className="w-20 h-20 rounded-lg overflow-hidden">
-              <Image source={{ uri }} className="w-full h-full" />
+            //* 23.3% width is roughly the width of 1 of 4 pictures in a row
+            <View key={uri} className="flex-1 aspect-square max-w-[23.3%] overflow-hidden">
+              <Image
+                source={{ uri }}
+                style={{ flex: 1, borderRadius: 8 }}
+                contentFit="cover"
+                contentPosition="center"
+                transition={200}
+              />
               <Pressable
-                className="absolute top-1 right-1"
+                className="absolute top-0.5 right-0.5"
                 onPress={() => field.handleChange(uris.filter((u) => u !== uri))}
                 hitSlop={8}
               >
@@ -56,24 +66,36 @@ export function ImageFieldComponent() {
             </View>
           ))}
         </View>
+      ) : (
+        <View className="pb-2">
+          <Text className="italic text-muted text-center">Keine Bilder ausgewählt</Text>
+        </View>
       )}
 
-      <View className="flex-row gap-2">
-        <Pressable
-          onPress={pickFromCamera}
-          className="flex-1 flex-row items-center justify-center gap-2 border border-border rounded-lg py-2"
-        >
-          <Ionicons name="camera-outline" size={16} />
-          <Text className="text-sm">Kamera</Text>
-        </Pressable>
-        <Pressable
-          onPress={pickFromGallery}
-          className="flex-1 flex-row items-center justify-center gap-2 border border-border rounded-lg py-2"
-        >
-          <Ionicons name="images-outline" size={16} />
-          <Text className="text-sm">Galerie</Text>
-        </Pressable>
+      <View className="flex-row gap-3">
+
+        <View className="flex-1">
+          <Button
+            variant="tertiary"
+            onPress={pickFromCamera}
+          >
+            <Icon name="camera-outline" size={20} />
+            <Button.Label className="text-sm">Kamera</Button.Label>
+          </Button>
+        </View>
+
+        <View className="flex-1">
+          <Button
+            variant="tertiary"
+            onPress={pickFromGallery}
+          >
+            <Icon name="images-outline" size={20} />
+            <Button.Label className="text-sm">Galerie</Button.Label>
+          </Button>
+        </View>
+
       </View>
-    </View>
+
+    </TextField>
   );
 }

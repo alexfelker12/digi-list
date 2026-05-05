@@ -1,6 +1,6 @@
-import { Text } from '@/components/text';
 import { useFieldContext } from '@/lib/form';
-import { TextInput, View } from 'react-native';
+import { FieldError, Input, Label, TextField } from "heroui-native";
+import { useState } from "react";
 
 
 interface NumberFieldProps {
@@ -8,28 +8,38 @@ interface NumberFieldProps {
   placeholder?: string;
 }
 export function NumberFieldComponent({ label, placeholder }: NumberFieldProps) {
-  const field = useFieldContext<number | null>();
+  const field = useFieldContext<number | null>()
+  const [displayValue, setDisplayValue] = useState(field.state.value?.toString() ?? "")
+
+  // create invalid state and error message
+  const meta = field.state.meta
+  const isInvalid = !meta.isValid && meta.isTouched
+  const errorMessage = meta.errors[0]?.message.toString()
 
   return (
-    <View className="mb-3">
-      <Text className="text-sm text-muted mb-1">{label}</Text>
-      <TextInput
-        className="bg-muted/20 text-foreground border border-border rounded-lg px-3 py-2"
+    <TextField isInvalid={isInvalid} className="gap-0">
+      <Label className="text-sm text-muted">{label}</Label>
+
+      <Input
+        className="text-base py-2.5"
+        textAlign="right"
         placeholder={placeholder}
-        placeholderTextColor="#999"
         keyboardType="decimal-pad"
-        value={field.state.value?.toString() ?? ''}
+        value={displayValue}
         onChangeText={(v) => {
-          const parsed = parseFloat(v);
-          field.handleChange(isNaN(parsed) ? null : parsed);
+          const normalized = v.replace(',', '.');
+
+          // check float number format
+          if (normalized === '' || /^\d*\.?\d*$/.test(normalized)) {
+            setDisplayValue(v)
+            const parsed = parseFloat(normalized)
+            field.handleChange(isNaN(parsed) ? null : parsed) // syncing displayValue to form state
+          }
         }}
         onBlur={field.handleBlur}
       />
-      {field.state.meta.errors.length > 0 && (
-        <Text className="text-danger text-xs mt-1">
-          {field.state.meta.errors[0]?.toString()}
-        </Text>
-      )}
-    </View>
+
+      <FieldError>{errorMessage}</FieldError>
+    </TextField>
   );
 }

@@ -3,7 +3,7 @@ import { cn } from "tailwind-variants";
 import { withUniwind } from "uniwind";
 
 
-const StyledIcon = withUniwind(Ionicons)
-export function Icon({ className, ...props }: React.ComponentProps<typeof StyledIcon>) {
+export function Icon({ className, ...props }: React.ComponentProps<typeof Ionicons>) {
+  const StyledIcon = withUniwind(Ionicons)
   return <StyledIcon className={cn("size-5", className)} {...props} />;
 }

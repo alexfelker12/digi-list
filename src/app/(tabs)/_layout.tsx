@@ -3,6 +3,7 @@ import { Ref, useEffect, useRef, useState } from "react";
 import { Animated, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { Icon } from "@/components/icon";
 import {
   TabList as CustomTabList,
   Tabs as CustomTabs,
@@ -133,7 +134,7 @@ export function SyncedTabsTrigger({
     <Tabs.Trigger className="flex-1" value={value} {...props}>
       <View className="flex-1 flex-col gap-0.5 items-center">
         <Animated.Text style={{ color: iconColor }}>
-          <Ionicons size={24} name={icon} />
+          <Icon name={icon} size={24} />
         </Animated.Text>
         <Animated.Text className="text-sm" style={{ color: textColor }} numberOfLines={1}>
           {label}

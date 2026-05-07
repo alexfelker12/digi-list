@@ -5,5 +5,5 @@ import { withUniwind } from "uniwind";
 
 export function Icon({ className, ...props }: React.ComponentProps<typeof Ionicons>) {
   const StyledIcon = withUniwind(Ionicons)
-  return <StyledIcon className={cn("size-5", className)} {...props} />;
+  return <StyledIcon className={cn("size-5 text-foreground", className)} {...props} />;
 }

@@ -9,7 +9,6 @@ export function ItemFormSheet({ item, onSubmit, children }: ItemFormProps & {
   children?: React.ReactNode
 }) {
   const [sheetOpen, setSheetOpen] = useState(false);
-
   const isEditing = !!item;
 
   return (

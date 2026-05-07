@@ -1,7 +1,7 @@
 import { useFieldContext } from '@/lib/form';
-import { Ionicons } from '@expo/vector-icons';
+import { getDisplayUri, saveImageToAppStorage } from '@/lib/utils';
 import { Image } from "expo-image";
-import * as ImagePicker from 'expo-image-picker';
+import { launchCameraAsync, launchImageLibraryAsync, requestCameraPermissionsAsync, requestMediaLibraryPermissionsAsync } from 'expo-image-picker';
 import { Button, Label, TextField } from "heroui-native";
 import { Alert, Pressable, View } from 'react-native';
 import { Icon } from "../icon";
@@ -13,30 +13,33 @@ export function ImageFieldComponent() {
   const uris = field.state.value ?? [];
 
   async function pickFromGallery() {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    const { status } = await requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert('Berechtigung fehlt', 'Galerie-Zugriff wurde nicht erlaubt.');
       return;
     }
-    const result = await ImagePicker.launchImageLibraryAsync({
+    const result = await launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsMultipleSelection: true,
       quality: 0.8,
     });
     if (!result.canceled) {
+      // Galerie → vollständiger URI, nicht von uns verwaltet
       field.handleChange([...uris, ...result.assets.map((a) => a.uri)]);
     }
   }
 
   async function pickFromCamera() {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+    const { status } = await requestCameraPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert('Berechtigung fehlt', 'Kamera-Zugriff wurde nicht erlaubt.');
       return;
     }
-    const result = await ImagePicker.launchCameraAsync({ quality: 0.8 });
+    const result = await launchCameraAsync({ quality: 0.8 });
     if (!result.canceled) {
-      field.handleChange([...uris, result.assets[0].uri]);
+      // Kamera → in App-Storage kopieren, nur Dateiname speichern
+      const filename = await saveImageToAppStorage(result.assets[0].uri);
+      field.handleChange([...uris, filename]);
     }
   }
 
@@ -46,11 +49,10 @@ export function ImageFieldComponent() {
 
       {uris.length > 0 ? (
         <View className="flex-row flex-wrap gap-2 mb-2">
-          {uris.map((uri) => (
-            //* 23.3% width is roughly the width of 1 of 4 pictures in a row
-            <View key={uri} className="flex-1 aspect-square max-w-[23.3%] overflow-hidden">
+          {uris.map((uriOrFilename) => (
+            <View key={uriOrFilename} className="flex-1 aspect-square max-w-[23.3%] overflow-hidden">
               <Image
-                source={{ uri }}
+                source={{ uri: getDisplayUri(uriOrFilename) }}
                 style={{ flex: 1, borderRadius: 8 }}
                 contentFit="cover"
                 contentPosition="center"
@@ -58,10 +60,10 @@ export function ImageFieldComponent() {
               />
               <Pressable
                 className="absolute top-0.5 right-0.5"
-                onPress={() => field.handleChange(uris.filter((u) => u !== uri))}
+                onPress={() => field.handleChange(uris.filter((u) => u !== uriOrFilename))}
                 hitSlop={8}
               >
-                <Ionicons name="close-circle" size={20} color="#fff" />
+                <Icon name="close-circle" className="text-white" size={20} />
               </Pressable>
             </View>
           ))}
@@ -73,27 +75,18 @@ export function ImageFieldComponent() {
       )}
 
       <View className="flex-row gap-3">
-
         <View className="flex-1">
-          <Button
-            variant="tertiary"
-            onPress={pickFromCamera}
-          >
-            <Icon name="camera-outline" size={20} />
+          <Button variant="tertiary" onPress={pickFromCamera}>
+            <Icon name="camera-outline" className="text-foreground" size={20} />
             <Button.Label className="text-sm">Kamera</Button.Label>
           </Button>
         </View>
-
         <View className="flex-1">
-          <Button
-            variant="tertiary"
-            onPress={pickFromGallery}
-          >
-            <Icon name="images-outline" size={20} />
+          <Button variant="tertiary" onPress={pickFromGallery}>
+            <Icon name="images-outline" className="text-foreground" size={20} />
             <Button.Label className="text-sm">Galerie</Button.Label>
           </Button>
         </View>
-
       </View>
 
     </TextField>

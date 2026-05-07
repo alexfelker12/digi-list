@@ -14,10 +14,9 @@ export const items = sqliteTable('item', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
   quantity: real('quantity').notNull(),
-  unit: text('unit', { enum: ['kg', 'g', 'l', 'ml', 'Stk', 'Pkg', 'EL', 'TL'] }).notNull(),
+  unit: text('unit', { enum: ['kg', 'g', 'l', 'ml', 'stk', 'pkg', 'el', 'tl'] }).notNull(),
   notes: text('notes'),
   imageUris: text('image_uris'),
-  sortOrder: integer('sort_order').notNull().default(0),
 }, (t) => [
   index('items_name_idx').on(t.name),
 ]);
@@ -37,16 +36,16 @@ export const listItems = sqliteTable('list_item', {
 export type List = typeof lists.$inferSelect;
 export type NewList = typeof lists.$inferInsert;
 export type Item = typeof items.$inferSelect;
+export type ItemWithUriArray = Omit<Item, 'imageUris'> & { imageUris: string[] }
 export type NewItem = typeof items.$inferInsert;
 export type ListItem = typeof listItems.$inferSelect;
-export type Unit = NonNullable<Item['unit']>;
-export const UNITS: Unit[] = ['kg', 'g', 'l', 'ml', 'Stk', 'Pkg', 'EL', 'TL'];
+export type Unit = Item['unit'];
+export const UNITS: Unit[] = ['kg', 'g', 'l', 'ml', 'stk', 'pkg', 'el', 'tl'];
 
 export const parseImageUris = (raw: string | null | undefined): string[] => {
   if (!raw) return [];
   try { return JSON.parse(raw); } catch { return []; }
 };
-
 export const stringifyImageUris = (uris: string[]): string => JSON.stringify(uris);
 
 export const itemInsertSchema = createInsertSchema(items, {
@@ -82,8 +81,8 @@ export const unitMap: Record<Unit, string> = {
   g: 'Gramm',
   l: 'Liter',
   ml: 'Milliliter',
-  Stk: 'Stück',
-  Pkg: 'Packung',
-  EL: 'Esslöffel',
-  TL: 'Teelöffel'
+  stk: 'Stück',
+  pkg: 'Packung',
+  el: 'Esslöffel',
+  tl: 'Teelöffel'
 }

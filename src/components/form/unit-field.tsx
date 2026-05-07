@@ -32,7 +32,7 @@ export function UnitFieldComponent({ label }: NumberFieldProps) {
         }}
         presentation="popover"
       >
-        <Select.Trigger className="text-base">
+        <Select.Trigger className="text-base py-2.5 border border-transparent dark:border-border dark:focus:border-accent">
           <Select.Value placeholder={label} />
           <Select.TriggerIndicator />
         </Select.Trigger>

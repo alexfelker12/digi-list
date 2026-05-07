@@ -5,10 +5,10 @@ import { Button } from 'heroui-native/button';
 import { Separator } from "heroui-native/separator";
 import { ScrollView, View } from 'react-native';
 
-import { ImageFieldComponent } from "./form/image-field";
-import { NumberFieldComponent } from "./form/number-field";
-import { TextFieldComponent } from "./form/text-field";
-import { UnitFieldComponent } from "./form/unit-field";
+import { ImageFieldComponent } from "../form/image-field";
+import { NumberFieldComponent } from "../form/number-field";
+import { TextFieldComponent } from "../form/text-field";
+import { UnitFieldComponent } from "../form/unit-field";
 
 
 const defaultValues: ItemFormInput = {
@@ -17,7 +17,6 @@ const defaultValues: ItemFormInput = {
   unit: null,
   notes: null,
   imageUris: [],
-  sortOrder: 0,
 };
 
 const { useAppForm } = createFormHook({
@@ -45,8 +44,7 @@ export function ItemForm({ item, onSubmit }: ItemFormProps) {
     },
     onSubmit: async ({ value }) => {
       //* zod validation ensures quantity and unit are valid (not null)
-      // await onSubmit(value as ItemFormValues);
-      console.log(value)
+      await onSubmit(value as ItemFormValues);
       form.reset(item ? value : defaultValues)
     },
   });

@@ -20,7 +20,7 @@ export function TextFieldComponent({ label, placeholder, multiline }: TextFieldP
       <Label className="text-sm text-muted">{label}</Label>
 
       <Input
-        className="text-base py-2.5"
+        className="text-base py-2.5 dark:border dark:border-border dark:focus:border-accent"
         placeholder={placeholder}
         value={field.state.value ?? ''}
         onChangeText={field.handleChange}

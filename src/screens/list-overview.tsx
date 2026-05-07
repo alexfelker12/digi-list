@@ -1,4 +1,5 @@
-import { ItemFormSheet } from "@/components/item-form-sheet";
+import { ItemFormSheet } from "@/components/items/item-form-sheet";
+import { ProductItem } from "@/components/items/product-item";
 import { ScreenLayout } from "@/components/screen-layout";
 import { Text } from "@/components/text";
 import { allItemsOptions, createItemMutationOptions } from "@/lib/list-queries";
@@ -15,17 +16,6 @@ export default function ListOverviewScreen() {
   return (
     <ScreenLayout title="Einkaufslisten">
       <ItemFormSheet
-        //* mock item
-        // item={{
-        //   name: "Test",
-        //   quantity: 3,
-        //   unit: "l",
-        //   imageUris: [
-        //     "file:///data/user/0/host.exp.exponent/cache/ImagePicker/d25f4e29-81db-4f8f-a570-d537d751cf26.jpeg"
-        //   ],
-        //   notes: "Irgendwas ja",
-        //   sortOrder: 0,
-        // }}
         onSubmit={async (values) => {
           await mutateAsync(values)
         }}
@@ -47,9 +37,7 @@ function ItemsListing() {
         {isPending ? (
           <ActivityIndicator size="large" className="text-accent" />
         ) : data && data.map((item) => (
-          <View key={item.id} className="border border-border p-2 rounded-md bg-surface-secondary flex-row gap-2">
-            <Text>{item.name} - {item.quantity} {item.unit} - {item.notes}</Text>
-          </View>
+          <ProductItem key={item.id} item={item} />
         ))}
       </View>
     </View>

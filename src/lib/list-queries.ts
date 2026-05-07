@@ -18,7 +18,7 @@ export const queryKeys = {
 export const allItemsOptions = () => queryOptions({
   queryKey: queryKeys.items(),
   queryFn: async () => {
-    const rows = await db.select().from(items).orderBy(items.sortOrder);
+    const rows = await db.select().from(items);
     return rows.map(r => ({ ...r, imageUris: parseImageUris(r.imageUris) }));
   },
 });

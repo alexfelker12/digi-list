@@ -5,6 +5,7 @@ import { Text } from "@/components/text";
 import { allListsQueryOptions, createListMutationOptions } from "@/lib/list-queries";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
+import { Separator } from "heroui-native";
 import { ActivityIndicator, View } from "react-native";
 
 
@@ -41,14 +42,19 @@ function ListsListing() {
 
   return (
     <View className="flex-1 gap-2">
-      <View>
-        <Text>Einkaufslisten:</Text>
+      <View className="flex-row items-center justify-between">
+        <Text className="text-lg">
+          {data?.length ?? 0} {data?.length === 1 ? "Eintrag" : "Einträge"}
+        </Text>
+
         <ListFormDialog
           onSubmit={async (values) => {
             await mutateAsync(values)
           }}
         />
       </View>
+
+      <Separator />
 
       <View className="flex-1 flex-col gap-2 pb-1">
         {isPending && <ActivityIndicator size="large" className="text-accent" />}

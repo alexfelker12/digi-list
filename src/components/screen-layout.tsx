@@ -16,7 +16,7 @@ export function ScreenLayout({ title, showBack, className, ...props }: ScreenLay
       <AppHeader title={title} showBack={showBack} />
       <ScrollView
         className="flex-1 bg-background"
-        contentContainerClassName={cn("p-4 flex-col gap-4", className)}
+        contentContainerClassName={cn("flex-1 p-4 flex-col gap-4", className)}
         contentContainerStyle={{ paddingBottom: bottom + 80 }}
         {...props}
       />

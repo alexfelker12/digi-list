@@ -51,6 +51,8 @@ export default function RootLayout() {
                   contentStyle: { backgroundColor: "transparent" }
                 }}>
                   <Stack.Screen name="(tabs)" />
+                  <Stack.Screen name="list/[id]" options={{ title: "Details" }} />
+                  <Stack.Screen name="list/[id]/item/[itemId]" options={{ title: "Item Detail" }} />
                 </Stack>
                 <StatusBar style="auto" />
 

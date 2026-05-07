@@ -3,9 +3,9 @@ import { getDisplayUri } from "@/lib/utils";
 import { ItemWithUriArray } from "@/server/db";
 import { useMutation } from "@tanstack/react-query";
 import { Image } from "expo-image";
-import { Button, Card, Dialog } from "heroui-native";
-import { useState } from "react";
+import { Button, Card } from "heroui-native";
 import { View } from "react-native";
+import { DeleteDialog } from "../delete-dialog";
 import { Icon } from "../icon";
 import { Text } from "../text";
 import { ItemFormSheet } from "./item-form-sheet";
@@ -15,7 +15,6 @@ type ItemTestProps = {
   item: ItemWithUriArray
 }
 export function ProductItem({ item }: ItemTestProps) {
-  const [isOpen, setIsOpen] = useState(false)
   const { mutateAsync: updateItem } = useMutation(updateItemMutationOptions(item.id))
   const { mutateAsync: deleteItem, isPending: deletePending } = useMutation(deleteItemMutationOptions(item.id))
 
@@ -67,46 +66,11 @@ export function ProductItem({ item }: ItemTestProps) {
           </Button>
         </ItemFormSheet>
 
-        <Dialog isOpen={isOpen} onOpenChange={setIsOpen}>
-          <Dialog.Trigger asChild>
-
-            <Button size="sm" variant="danger-soft" isIconOnly isDisabled={deletePending}>
-              <Icon name="trash" className="text-danger-soft-foreground" size={20} />
-            </Button>
-
-          </Dialog.Trigger>
-          <Dialog.Portal>
-            <Dialog.Overlay />
-            <Dialog.Content className="gap-4">
-              <Dialog.Close variant="ghost" className="absolute top-1.5 right-1.5" />
-
-              <View className="gap-1">
-                <Dialog.Title className="leading-none">{item.name} löschen?</Dialog.Title>
-                <Dialog.Description className="leading-snug">Kann nicht rückgängig gemacht werden!</Dialog.Description>
-              </View>
-
-              <View className="flex-row gap-2">
-                <Button variant="tertiary" className="flex-1"
-                  onPress={() => setIsOpen(false)}
-                  isDisabled={deletePending}
-                >
-                  Abbrechen
-                </Button>
-                <Button variant="danger-soft" className="flex-1"
-                  onPress={async () => {
-                    await deleteItem()
-                    setIsOpen(false)
-                  }}
-                  isDisabled={deletePending}
-                >
-                  <Icon name="trash" className="text-danger-soft-foreground" size={20} />
-                  <Button.Label>Ja, löschen</Button.Label>
-                </Button>
-              </View>
-
-            </Dialog.Content>
-          </Dialog.Portal>
-        </Dialog>
+        <DeleteDialog
+          name={item.name}
+          actionPending={deletePending}
+          onConfirm={deleteItem}
+        />
 
       </Card.Footer>
     </Card>

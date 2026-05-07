@@ -1,9 +1,11 @@
 import { db } from '@/server/db';
-import type { ItemFormValues } from '@/server/db/schema';
-import { items, parseImageUris, stringifyImageUris } from '@/server/db/schema';
+import type { Item, ItemFormValues } from '@/server/db/schema';
+import { items, lists, parseImageUris, stringifyImageUris } from '@/server/db/schema';
 import { mutationOptions, queryOptions, useQueryClient } from '@tanstack/react-query';
 import { eq } from 'drizzle-orm';
 
+
+type ParsedItem = Omit<Item, "imageUris"> & { imageUris: string[] }
 
 // ─── Keys ────────────────────────────────────────────────────────────────────
 export const queryKeys = {
@@ -15,20 +17,27 @@ export const queryKeys = {
 };
 
 // ─── Items ───────────────────────────────────────────────────────────────────
-export const allItemsOptions = () => queryOptions({
+const parseItem = (item: Item): ParsedItem => {
+  return {
+    ...item,
+    imageUris: parseImageUris(item.imageUris)
+  }
+}
+
+export const allItemsQueryOptions = () => queryOptions({
   queryKey: queryKeys.items(),
   queryFn: async () => {
     const rows = await db.select().from(items);
-    return rows.map(r => ({ ...r, imageUris: parseImageUris(r.imageUris) }));
+    return rows.map(parseItem);
   },
 });
 
-export const itemOptions = (id: number) => queryOptions({
+export const itemQueryOptions = (id: number) => queryOptions({
   queryKey: queryKeys.item(id),
   queryFn: async () => {
     const [row] = await db.select().from(items).where(eq(items.id, id));
     if (!row) throw new Error(`Item ${id} nicht gefunden`);
-    return { ...row, imageUris: parseImageUris(row.imageUris) };
+    return parseItem(row);
   },
 });
 
@@ -36,7 +45,6 @@ export const itemOptions = (id: number) => queryOptions({
 export const dynamicItemMutationOptions = (id: number | undefined) => id
   ? updateItemMutationOptions(id)
   : createItemMutationOptions()
-
 
 export const createItemMutationOptions = () => {
   const qc = useQueryClient();
@@ -82,5 +90,36 @@ export const deleteItemMutationOptions = (id: number) => {
   return mutationOptions({
     mutationFn: () => db.delete(items).where(eq(items.id, id)),
     onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.items() }),
+  });
+}
+
+
+// ─── Lists ───────────────────────────────────────────────────────────
+export const allListsQueryOptions = () => queryOptions({
+  queryKey: queryKeys.lists(),
+  queryFn: async () => {
+    const rows = await db.select().from(lists);
+    return rows
+  },
+});
+
+export const deleteListMutationOptions = (id: number) => {
+  const qc = useQueryClient();
+  return mutationOptions({
+    mutationFn: () => db.delete(lists).where(eq(lists.id, id)),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.lists() }),
+  });
+}
+
+export const createListMutationOptions = () => {
+  const qc = useQueryClient();
+  return mutationOptions({
+    mutationFn: async ({ name }: { name: string }) => {
+      const [created] = await db.insert(lists)
+        .values({ name })
+        .returning();
+      return created;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.lists() }),
   });
 }

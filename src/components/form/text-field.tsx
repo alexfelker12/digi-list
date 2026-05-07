@@ -16,7 +16,7 @@ export function TextFieldComponent({ label, placeholder, multiline }: TextFieldP
   const errorMessage = meta.errors[0]?.message.toString()
 
   return (
-    <TextField isInvalid={isInvalid} className="gap-0">
+    <TextField isInvalid={isInvalid} className="gap-0.5">
       <Label className="text-sm text-muted">{label}</Label>
 
       <Input

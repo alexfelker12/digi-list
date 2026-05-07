@@ -2,6 +2,8 @@ import { index, integer, real, sqliteTable, text } from 'drizzle-orm/sqlite-core
 import { createInsertSchema } from 'drizzle-zod';
 import { z } from "zod/v4";
 
+
+//* sql tables
 export const lists = sqliteTable('list', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
@@ -33,6 +35,8 @@ export const listItems = sqliteTable('list_item', {
   index('list_items_item_idx').on(t.itemId),
 ]);
 
+
+//* types, constants and helpers
 export type List = typeof lists.$inferSelect;
 export type NewList = typeof lists.$inferInsert;
 export type Item = typeof items.$inferSelect;
@@ -48,6 +52,8 @@ export const parseImageUris = (raw: string | null | undefined): string[] => {
 };
 export const stringifyImageUris = (uris: string[]): string => JSON.stringify(uris);
 
+
+//* item schema and types
 export const itemInsertSchema = createInsertSchema(items, {
   // Felder überschreiben oder mit Validierung versehen
   name: z.string()
@@ -86,3 +92,10 @@ export const unitMap: Record<Unit, string> = {
   el: 'Esslöffel',
   tl: 'Teelöffel'
 }
+
+
+//* list schema and types
+export const listInsertSchema = createInsertSchema(lists);
+
+export type ListFormValues = z.output<typeof listInsertSchema>;
+export type ListFormInput = ListFormValues;

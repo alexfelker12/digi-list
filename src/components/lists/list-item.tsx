@@ -1,24 +1,24 @@
 import { DeleteDialog } from "@/components/delete-dialog";
-import { deleteListMutationOptions } from "@/lib/list-queries";
+import { deleteListMutationOptions } from "@/lib/queries/list-queries";
 import { List } from "@/server/db";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
-import { Card, PressableFeedback } from "heroui-native";
+import { Button, Card, PressableFeedback } from "heroui-native";
 import { GestureResponderEvent } from "react-native";
+import { Icon } from "../icon";
 
 
 type ListItemProps = {
   list: List
-  onPress: (event: GestureResponderEvent) => void
+  onPressRun: (event: GestureResponderEvent) => void
+  onPressEdit: (event: GestureResponderEvent) => void
 }
-export function ListItem({ list, onPress }: ListItemProps) {
+export function ListItem({ list, onPressRun, onPressEdit }: ListItemProps) {
   const { mutateAsync: deleteItem, isPending: deletePending } = useMutation(deleteListMutationOptions(list.id))
-  const router = useRouter()
 
   return (
     <PressableFeedback
       className="overflow-auto"
-      onPress={onPress}
+      onPress={onPressRun}
     >
       <Card className="flex-row justify-between items-center">
         <PressableFeedback.Highlight />
@@ -27,7 +27,11 @@ export function ListItem({ list, onPress }: ListItemProps) {
           <Card.Title>{list.name}</Card.Title>
         </Card.Body>
 
-        <Card.Footer>
+        <Card.Footer className="flex-row gap-1.5">
+          <Button variant="outline" size="sm" onPress={onPressEdit} isIconOnly>
+            <Icon name="create" size={20} />
+          </Button>
+
           <DeleteDialog
             name={list.name}
             onConfirm={deleteItem}

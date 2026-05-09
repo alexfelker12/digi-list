@@ -99,3 +99,13 @@ export const listInsertSchema = createInsertSchema(lists);
 
 export type ListFormValues = z.output<typeof listInsertSchema>;
 export type ListFormInput = ListFormValues;
+
+
+//* list item schema and types
+const singleListItemSchema = createInsertSchema(listItems);
+export const listItemInsertSchema = z.object({
+  listItems: z.array(singleListItemSchema)
+})
+
+export type ListItemFormValues = z.output<typeof listItemInsertSchema>;
+export type ListItemFormInput = ListItemFormValues;

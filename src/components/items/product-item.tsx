@@ -1,4 +1,4 @@
-import { deleteItemMutationOptions, updateItemMutationOptions } from "@/lib/list-queries";
+import { deleteItemMutationOptions, updateItemMutationOptions } from "@/lib/queries/list-queries";
 import { getDisplayUri } from "@/lib/utils";
 import { ItemWithUriArray } from "@/server/db";
 import { useMutation } from "@tanstack/react-query";

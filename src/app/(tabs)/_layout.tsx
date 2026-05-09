@@ -1,7 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Ref, useEffect, useRef, useState } from "react";
 import { Animated, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { Icon } from "@/components/icon";
 import {
@@ -18,7 +17,6 @@ import { Tabs } from "heroui-native/tabs";
 const ANIMATION_DURATION = 150
 export default function TabLayout() {
   const [value, setValue] = useState("1")
-  const { bottom } = useSafeAreaInsets();
 
   return (
     <CustomTabs>
@@ -33,8 +31,7 @@ export default function TabLayout() {
 
       {/* Visual tab bar using HeroUI, with TabTriggers outside TabList */}
       <Tabs
-        className="absolute bottom-0 left-0 right-0 p-2 bg-linear-to-t from-background via-background/50 to-background/0"
-        style={{ paddingBottom: bottom }}
+        className="absolute bottom-0 left-0 right-0 p-2 pb-safe bg-linear-to-t from-background via-background/50 to-background/0"
         value={value}
         onValueChange={setValue}
       >

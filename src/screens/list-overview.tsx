@@ -2,7 +2,7 @@ import { ListFormDialog } from "@/components/lists/list-form-dialog";
 import { ListItem } from "@/components/lists/list-item";
 import { ScreenLayout } from "@/components/screen-layout";
 import { Text } from "@/components/text";
-import { allListsQueryOptions, createListMutationOptions } from "@/lib/list-queries";
+import { allListsQueryOptions, createListMutationOptions } from "@/lib/queries/list-queries";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { Separator } from "heroui-native";
@@ -32,19 +32,18 @@ function ListsListing() {
       mutationOptionsOnSuccess?.(...args)
 
       // navigate to list details
-      handleNavigation(args[0].id)
+      navigateToEdit(args[0].id)
     }
   })
 
-  const handleNavigation = (listId: number) => {
-    router.push({ pathname: "/list/[id]", params: { id: listId } })
-  }
+  const navigateToRun = (id: number) => router.push({ pathname: "/list/[id]/run", params: { id } })
+  const navigateToEdit = (id: number) => router.push({ pathname: "/list/[id]/edit", params: { id } })
 
   return (
     <View className="flex-1 gap-2">
       <View className="flex-row items-center justify-between">
         <Text className="text-lg">
-          {data?.length ?? 0} {data?.length === 1 ? "Eintrag" : "Einträge"}
+          {data ? (data.length || "Keine") : 0} {data?.length === 1 ? "Eintrag" : "Einträge"}
         </Text>
 
         <ListFormDialog
@@ -60,7 +59,12 @@ function ListsListing() {
         {isPending && <ActivityIndicator size="large" className="text-accent" />}
 
         {data && data.map((list) => (
-          <ListItem key={list.id} list={list} onPress={() => handleNavigation(list.id)} />
+          <ListItem
+            key={list.id}
+            list={list}
+            onPressRun={() => navigateToRun(list.id)}
+            onPressEdit={() => navigateToEdit(list.id)}
+          />
         ))}
       </View>
     </View>

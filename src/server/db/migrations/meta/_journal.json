@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1777934896429,
-      "tag": "0000_perpetual_elektra",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "6",
-      "when": 1778158199421,
-      "tag": "0001_cute_meteorite",
+      "when": 1778366720778,
+      "tag": "0000_conscious_hammerhead",
       "breakpoints": true
     }
   ]

@@ -15,9 +15,6 @@ export const lists = sqliteTable('list', {
 export const items = sqliteTable('item', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   name: text('name').notNull(),
-  quantity: real('quantity').notNull(),
-  unit: text('unit', { enum: ['kg', 'g', 'l', 'ml', 'stk', 'pkg', 'el', 'tl'] }).notNull(),
-  notes: text('notes'),
   imageUris: text('image_uris'),
 }, (t) => [
   index('items_name_idx').on(t.name),
@@ -28,6 +25,10 @@ export const listItems = sqliteTable('list_item', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   listId: integer('list_id').notNull().references(() => lists.id, { onDelete: 'cascade' }),
   itemId: integer('item_id').notNull().references(() => items.id, { onDelete: 'cascade' }),
+
+  quantity: real('quantity').notNull(),
+  unit: text('unit', { enum: ['kg', 'g', 'l', 'ml', 'stk', 'pkg', 'el', 'tl'] }).notNull(),
+  notes: text('notes'),
   checked: integer('checked', { mode: 'boolean' }).notNull().default(false),
   sortOrder: integer('sort_order').notNull().default(0),
 }, (t) => [
@@ -43,7 +44,7 @@ export type Item = typeof items.$inferSelect;
 export type ItemWithUriArray = Omit<Item, 'imageUris'> & { imageUris: string[] }
 export type NewItem = typeof items.$inferInsert;
 export type ListItem = typeof listItems.$inferSelect;
-export type Unit = Item['unit'];
+export type Unit = ListItem['unit'];
 export const UNITS: Unit[] = ['kg', 'g', 'l', 'ml', 'stk', 'pkg', 'el', 'tl'];
 
 export const parseImageUris = (raw: string | null | undefined): string[] => {
@@ -59,6 +60,21 @@ export const itemInsertSchema = createInsertSchema(items, {
   name: z.string()
     .min(1, "Bitte Name des Produkts angeben")
     .max(100, "Nicht mehr als 100 Zeichen erlaubt"),
+  // imageUris als Array statt String — wir parsen es im Formular
+  imageUris: z.array(z.string()).optional(),
+});
+
+export type ItemFormValues = z.infer<typeof itemInsertSchema>;
+
+
+//* list schema and types
+export const listInsertSchema = createInsertSchema(lists);
+
+export type ListFormValues = z.infer<typeof listInsertSchema>;
+
+
+//* list item schema and types
+export const listItemSchema = createInsertSchema(listItems, {
   quantity: z.number({
     error: (issue) => {
       if (issue.code === "invalid_type") return "Bitte Menge angeben"
@@ -71,16 +87,14 @@ export const itemInsertSchema = createInsertSchema(items, {
   notes: z.string()
     .max(500, "Nicht mehr als 500 Zeichen erlaubt")
     .nullable(),
+}).extend({
+  // add product as context for list items
+  item: itemInsertSchema
+})
 
-  // imageUris als Array statt String — wir parsen es im Formular
-  imageUris: z.array(z.string()).optional(),
-});
-
-export type ItemFormInput = Omit<ItemFormValues, 'quantity' | 'unit'> & {
-  quantity: number | null;
-  unit: Unit | null;
-};
-export type ItemFormValues = z.output<typeof itemInsertSchema>;
+export const listItemsInsertSchema = z.object({
+  listItems: z.array(listItemSchema)
+})
 
 export const unitMap: Record<Unit, string> = {
   kg: 'Kilogramm',
@@ -93,19 +107,5 @@ export const unitMap: Record<Unit, string> = {
   tl: 'Teelöffel'
 }
 
-
-//* list schema and types
-export const listInsertSchema = createInsertSchema(lists);
-
-export type ListFormValues = z.output<typeof listInsertSchema>;
-export type ListFormInput = ListFormValues;
-
-
-//* list item schema and types
-const singleListItemSchema = createInsertSchema(listItems);
-export const listItemInsertSchema = z.object({
-  listItems: z.array(singleListItemSchema)
-})
-
-export type ListItemFormValues = z.output<typeof listItemInsertSchema>;
-export type ListItemFormInput = ListItemFormValues;
+export type ListItemInsert = z.infer<typeof listItemSchema>
+export type ListItemsFormValues = z.infer<typeof listItemsInsertSchema>

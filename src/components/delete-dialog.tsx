@@ -10,7 +10,7 @@ type DeleteDialogProps = {
   triggerSize?: ButtonSize
   triggerVariant?: ButtonVariant
   name: string
-  onConfirm: () => Promise<SQLiteRunResult>
+  onConfirm: () => Promise<SQLiteRunResult | void>
   actionPending: boolean
 }
 export function DeleteDialog({

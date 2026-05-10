@@ -1,39 +1,18 @@
-import { fieldContext, formContext } from "@/lib/form";
-import { ItemFormInput, itemInsertSchema, type ItemFormValues } from '@/server/db/schema';
-import { createFormHook } from "@tanstack/react-form";
+import { useAppForm } from "@/lib/form";
+import { itemInsertSchema, type ItemFormValues } from '@/server/db/schema';
 import { Button } from 'heroui-native/button';
 import { Separator } from "heroui-native/separator";
 import { ScrollView, View } from 'react-native';
 
-import { ImageFieldComponent } from "../form/image-field";
-import { NumberFieldComponent } from "../form/number-field";
-import { TextFieldComponent } from "../form/text-field";
-import { UnitFieldComponent } from "../form/unit-field";
 
-
-const defaultValues: ItemFormInput = {
+const defaultValues: ItemFormValues = {
   name: "",
-  quantity: null,
-  unit: null,
-  notes: null,
   imageUris: [],
-};
-
-const { useAppForm } = createFormHook({
-  fieldComponents: {
-    TextField: TextFieldComponent,
-    NumberField: NumberFieldComponent,
-    UnitField: UnitFieldComponent,
-    ImageField: ImageFieldComponent,
-  },
-  formComponents: {},
-  fieldContext,
-  formContext,
-});
+}
 
 export interface ItemFormProps {
-  item?: ItemFormValues;
-  onSubmit: (values: ItemFormValues) => Promise<void>;
+  item?: ItemFormValues
+  onSubmit: (values: ItemFormValues) => Promise<void>
 }
 export function ItemForm({ item, onSubmit }: ItemFormProps) {
   const form = useAppForm({
@@ -47,10 +26,10 @@ export function ItemForm({ item, onSubmit }: ItemFormProps) {
       await onSubmit(value as ItemFormValues);
       form.reset(item ? value : defaultValues)
     },
-  });
+  })
 
   return (
-    <View className="gap-4">
+    <View className="flex-1 gap-4">
       <ScrollView
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
@@ -60,28 +39,10 @@ export function ItemForm({ item, onSubmit }: ItemFormProps) {
           {(field) => <field.TextField label="Name *" placeholder="z.B. Milch" />}
         </form.AppField>
 
-        <View className="flex-row gap-3">
-          <View className="flex-1">
-            <form.AppField name="quantity">
-              {(field) => <field.NumberField label="Menge" placeholder="z.B. 2" />}
-            </form.AppField>
-          </View>
-          <View className="flex-1">
-            <form.AppField name="unit">
-              {(field) => <field.UnitField label="Einheit" />}
-            </form.AppField>
-          </View>
-        </View>
-
         <form.AppField name="imageUris">
           {(field) => <field.ImageField />}
         </form.AppField>
 
-        <form.AppField name="notes">
-          {(field) => (
-            <field.TextField label="Notizen" placeholder="Optional" multiline />
-          )}
-        </form.AppField>
       </ScrollView>
 
       <Separator />

@@ -2,7 +2,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { Ref, useEffect, useRef, useState } from "react";
 import { Animated, View } from "react-native";
 
-import { Icon } from "@/components/icon";
 import {
   TabList as CustomTabList,
   Tabs as CustomTabs,
@@ -105,7 +104,7 @@ export function SyncedTabsTrigger({
   onFocusChange,
   ...props
 }: SyncedTabsTriggerProps) {
-  const [primary, muted, foreground] = useThemeColor(["accent", "muted", "foreground"]);
+  const [accent, muted, foreground] = useThemeColor(["accent", "muted", "foreground"]);
   const focusAnimation = useRef(new Animated.Value(isFocused ? 1 : 0)).current;
 
   useEffect(() => {
@@ -119,7 +118,7 @@ export function SyncedTabsTrigger({
 
   const iconColor = focusAnimation.interpolate({
     inputRange: [0, 1],
-    outputRange: [muted, primary],
+    outputRange: [muted, accent],
   });
 
   const textColor = focusAnimation.interpolate({
@@ -131,7 +130,7 @@ export function SyncedTabsTrigger({
     <Tabs.Trigger className="flex-1" value={value} {...props}>
       <View className="flex-1 flex-col gap-0.5 items-center">
         <Animated.Text style={{ color: iconColor }}>
-          <Icon name={icon} size={24} />
+          <Ionicons name={icon} size={24} />
         </Animated.Text>
         <Animated.Text className="text-sm" style={{ color: textColor }} numberOfLines={1}>
           {label}

@@ -1,7 +1,7 @@
 import { db } from '@/server/db';
 import type { ItemFormValues } from '@/server/db/schema';
 import { items } from '@/server/db/schema';
-import { mutationOptions, queryOptions, useQueryClient } from '@tanstack/react-query';
+import { mutationOptions, queryOptions } from '@tanstack/react-query';
 import { eq } from 'drizzle-orm';
 import { parseItem, queryKeys, stringifyItem } from "./_helper";
 
@@ -29,41 +29,29 @@ export const dynamicItemMutationOptions = (id: number | undefined) => id
   ? updateItemMutationOptions(id)
   : createItemMutationOptions()
 
-export const createItemMutationOptions = () => {
-  const qc = useQueryClient();
-  return mutationOptions({
-    mutationFn: async (data: ItemFormValues) => {
-      const [created] = await db.insert(items)
-        .values(stringifyItem(data))
-        .returning();
-      return created;
-    },
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.items() }),
-  });
-}
+export const createItemMutationOptions = () => mutationOptions({
+  mutationFn: async (data: ItemFormValues) => {
+    const [created] = await db.insert(items)
+      .values(stringifyItem(data))
+      .returning()
+    return created
+  },
+})
 
-export const updateItemMutationOptions = (id: number) => {
-  const qc = useQueryClient();
+export const updateItemMutationOptions = (id: number) => mutationOptions({
+  mutationFn: async (data: ItemFormValues) => {
+    const [updated] = await db.update(items)
+      .set(stringifyItem(data))
+      .where(eq(items.id, id))
+      .returning()
+    return updated
+  },
 
-  return mutationOptions({
-    mutationFn: async (data: ItemFormValues) => {
-      const [created] = await db.update(items)
-        .set(stringifyItem(data))
-        .where(eq(items.id, id))
-        .returning();
-      return created;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.items() });
-      qc.invalidateQueries({ queryKey: queryKeys.item(id) });
-    },
-  });
-}
+})
 
-export const deleteItemMutationOptions = (id: number) => {
-  const qc = useQueryClient();
-  return mutationOptions({
-    mutationFn: () => db.delete(items).where(eq(items.id, id)),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.items() }),
-  });
-}
+export const deleteItemMutationOptions = (id: number) => mutationOptions({
+  mutationFn: async () => {
+    await db.delete(items)
+      .where(eq(items.id, id))
+  },
+})

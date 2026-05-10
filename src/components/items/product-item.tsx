@@ -1,13 +1,13 @@
-import { deleteItemMutationOptions, updateItemMutationOptions } from "@/lib/queries/list-queries";
+import { queryKeys } from "@/lib/queries/_helper";
+import { deleteItemMutationOptions, updateItemMutationOptions } from "@/lib/queries/item-queries";
 import { getDisplayUri } from "@/lib/utils";
 import { ItemWithUriArray } from "@/server/db";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import { Button, Card } from "heroui-native";
 import { View } from "react-native";
 import { DeleteDialog } from "../delete-dialog";
 import { Icon } from "../icon";
-import { Text } from "../text";
 import { ItemFormSheet } from "./item-form-sheet";
 
 
@@ -15,8 +15,19 @@ type ItemTestProps = {
   item: ItemWithUriArray
 }
 export function ProductItem({ item }: ItemTestProps) {
-  const { mutateAsync: updateItem } = useMutation(updateItemMutationOptions(item.id))
-  const { mutateAsync: deleteItem, isPending: deletePending } = useMutation(deleteItemMutationOptions(item.id))
+  const qc = useQueryClient()
+
+  const { mutateAsync: updateItem } = useMutation({
+    ...updateItemMutationOptions(item.id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: queryKeys.items() });
+      qc.invalidateQueries({ queryKey: queryKeys.item(item.id) });
+    },
+  })
+  const { mutateAsync: deleteItem, isPending: deletePending } = useMutation({
+    ...deleteItemMutationOptions(item.id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.items() }),
+  })
 
   const uris = item.imageUris.length > 0 ? item.imageUris : ["react-logo"];
 
@@ -49,7 +60,7 @@ export function ProductItem({ item }: ItemTestProps) {
             <Text>{unitMap[item.unit]}</Text>
           </View> */}
 
-          <Text className="text-sm text-muted leading-tight">{item.notes}</Text>
+          {/* <Text className="text-sm text-muted leading-tight">{item.notes}</Text> */}
         </View>
 
       </Card.Body>

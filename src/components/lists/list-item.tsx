@@ -1,7 +1,8 @@
 import { DeleteDialog } from "@/components/delete-dialog";
+import { queryKeys } from "@/lib/queries/_helper";
 import { deleteListMutationOptions } from "@/lib/queries/list-queries";
 import { List } from "@/server/db";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Card, PressableFeedback } from "heroui-native";
 import { GestureResponderEvent } from "react-native";
 import { Icon } from "../icon";
@@ -12,8 +13,12 @@ type ListItemProps = {
   onPressRun: (event: GestureResponderEvent) => void
   onPressEdit: (event: GestureResponderEvent) => void
 }
-export function ListItem({ list, onPressRun, onPressEdit }: ListItemProps) {
-  const { mutateAsync: deleteItem, isPending: deletePending } = useMutation(deleteListMutationOptions(list.id))
+export function ItemList({ list, onPressRun, onPressEdit }: ListItemProps) {
+  const qc = useQueryClient()
+  const { mutateAsync, isPending } = useMutation({
+    ...deleteListMutationOptions(list.id),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.lists() })
+  })
 
   return (
     <PressableFeedback
@@ -34,8 +39,8 @@ export function ListItem({ list, onPressRun, onPressEdit }: ListItemProps) {
 
           <DeleteDialog
             name={list.name}
-            onConfirm={deleteItem}
-            actionPending={deletePending}
+            onConfirm={mutateAsync}
+            actionPending={isPending}
           />
         </Card.Footer>
       </Card>

@@ -1,4 +1,4 @@
-import { useFieldContext } from '@/lib/form';
+import { useFieldContext } from "@/lib/form/form-context";
 import { getDisplayUri, saveImageToAppStorage } from '@/lib/utils';
 import { Image } from "expo-image";
 import { launchCameraAsync, launchImageLibraryAsync, requestCameraPermissionsAsync, requestMediaLibraryPermissionsAsync } from 'expo-image-picker';

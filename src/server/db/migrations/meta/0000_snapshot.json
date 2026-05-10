@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "5d378ef3-606a-4b58-be20-16ee515b8af3",
+  "id": "7dc9e1e3-5f4e-4d56-a640-0060d466b50a",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "item": {
@@ -21,41 +21,12 @@
           "notNull": true,
           "autoincrement": false
         },
-        "quantity": {
-          "name": "quantity",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "unit": {
-          "name": "unit",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "notes": {
-          "name": "notes",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
         "image_uris": {
           "name": "image_uris",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
           "autoincrement": false
-        },
-        "sort_order": {
-          "name": "sort_order",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": 0
         }
       },
       "indexes": {
@@ -94,6 +65,27 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": true,
+          "autoincrement": false
+        },
+        "quantity": {
+          "name": "quantity",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "unit": {
+          "name": "unit",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
           "autoincrement": false
         },
         "checked": {

@@ -1,16 +1,16 @@
+import { EmptyListIndicator } from "@/components/empty-list-indicator";
 import { ListFormDialog } from "@/components/lists/list-form-dialog";
-import { ListItem } from "@/components/lists/list-item";
+import { ItemList } from "@/components/lists/list-item";
 import { ScreenLayout } from "@/components/screen-layout";
 import { Text } from "@/components/text";
+import { queryKeys } from "@/lib/queries/_helper";
 import { allListsQueryOptions, createListMutationOptions } from "@/lib/queries/list-queries";
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useRouter } from "expo-router";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { router } from "expo-router";
 import { Separator } from "heroui-native";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, FlatList, View } from "react-native";
 
 
-// TODO: create list with items & list functionality (core of app)
-// TODO: make edit screen maybe?
 export default function ListOverviewScreen() {
   return (
     <ScreenLayout title="Einkaufslisten">
@@ -19,28 +19,23 @@ export default function ListOverviewScreen() {
   );
 }
 
-
 function ListsListing() {
   const { data, isPending } = useQuery(allListsQueryOptions())
-  const router = useRouter()
 
-  const mutationOptions = createListMutationOptions()
-  const mutationOptionsOnSuccess = mutationOptions.onSuccess
+  const qc = useQueryClient();
   const { mutateAsync } = useMutation({
-    ...mutationOptions,
-    onSuccess: (...args) => {
-      mutationOptionsOnSuccess?.(...args)
-
-      // navigate to list details
-      navigateToEdit(args[0].id)
-    }
+    ...createListMutationOptions(),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.lists() })
   })
 
-  const navigateToRun = (id: number) => router.push({ pathname: "/list/[id]/run", params: { id } })
-  const navigateToEdit = (id: number) => router.push({ pathname: "/list/[id]/edit", params: { id } })
+  const navigate = (pathname: "/list/[id]/run" | "/list/[id]/edit") => {
+    return (id: number, listName: string) => router.push({ pathname, params: { id, listName } })
+  }
+  const navigateToRun = navigate("/list/[id]/run")
+  const navigateToEdit = navigate("/list/[id]/edit")
 
   return (
-    <View className="flex-1 gap-2">
+    <View className="flex-1 gap-4">
       <View className="flex-row items-center justify-between">
         <Text className="text-lg">
           {data ? (data.length || "Keine") : 0} {data?.length === 1 ? "Eintrag" : "Einträge"}
@@ -48,49 +43,37 @@ function ListsListing() {
 
         <ListFormDialog
           onSubmit={async (values) => {
-            await mutateAsync(values)
+            await mutateAsync(values, {
+              // navigate to list details
+              onSuccess: (data) => {
+                navigateToEdit(data.id, data.name)
+              },
+            })
           }}
         />
       </View>
 
       <Separator />
 
-      <View className="flex-1 flex-col gap-2 pb-1">
-        {isPending && <ActivityIndicator size="large" className="text-accent" />}
-
-        {data && data.map((list) => (
-          <ListItem
-            key={list.id}
-            list={list}
-            onPressRun={() => navigateToRun(list.id)}
-            onPressEdit={() => navigateToEdit(list.id)}
-          />
-        ))}
+      <View className="flex-1 -mx-1">
+        <FlatList
+          data={data}
+          keyExtractor={(list) => String(list.id)}
+          renderItem={({ item: list }) => (
+            <ItemList
+              list={list}
+              onPressRun={() => navigateToRun(list.id, list.name)}
+              onPressEdit={() => navigateToEdit(list.id, list.name)}
+            />
+          )}
+          ListEmptyComponent={isPending ? (
+            <ActivityIndicator size="large" className="text-accent" />
+          ) : (
+            <EmptyListIndicator message="Noch keine Einkaufslisten erstellt" />
+          )}
+          contentContainerClassName="gap-2 px-1 pb-20"
+        />
       </View>
     </View>
   );
 }
-
-// import { ProductItem } from "@/components/items/product-item";
-// import { Text } from "@/components/text";
-// import { allItemsOptions } from "@/lib/list-queries";
-// import { useQuery } from "@tanstack/react-query";
-// import { ActivityIndicator, View } from "react-native";
-
-// function ItemsListing() {
-//   const { data, isPending } = useQuery(allItemsOptions())
-
-//   return (
-//     <View className="flex-1 gap-2">
-//       <Text>Momenate Items</Text>
-
-//       <View className="flex-col gap-2">
-//         {isPending ? (
-//           <ActivityIndicator size="large" className="text-accent" />
-//         ) : data && data.map((item) => (
-//           <ProductItem key={item.id} item={item} />
-//         ))}
-//       </View>
-//     </View>
-//   );
-// }

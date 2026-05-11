@@ -37,7 +37,7 @@ function ListsListing() {
   return (
     <View className="flex-1 gap-4">
       <View className="flex-row items-center justify-between">
-        <Text className="text-lg">
+        <Text className="text-muted italic">
           {data ? (data.length || "Keine") : 0} {data?.length === 1 ? "Eintrag" : "Einträge"}
         </Text>
 

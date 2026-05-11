@@ -10,16 +10,16 @@ import { useEffect } from "react";
 
 import * as SystemUI from 'expo-system-ui';
 
+import { useThemeColor } from "heroui-native";
 import { HeroUINativeProvider } from 'heroui-native/provider';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
 
+import { JsStack, jsStackScreenOptions } from "@/lib/navigation/js-stack";
 import { StatusBar } from "expo-status-bar";
 
 import { ErrorScreen } from "@/components/error-screen";
 import { LoadingScreen } from "@/components/loading-screen";
-import { JsStack, jsStackScreenOptions } from "@/lib/navigation/js-stack";
-import { useThemeColor } from "heroui-native";
 
 
 function MigrationsGuard({ children }: { children: React.ReactNode }) {

@@ -48,7 +48,7 @@ function DraggableRow({ item, onPress, onRemove }: RowProps) {
 
           <Card.Footer className="justify-center">
             <Button variant="danger-soft" size="sm" onPress={onRemove} isIconOnly>
-              <Icon name="close" className="text-danger-soft-foreground" size={20} />
+              <Icon name="trash" className="text-danger-soft-foreground" size={20} />
             </Button>
           </Card.Footer>
         </Pressable>

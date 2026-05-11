@@ -34,55 +34,57 @@ export function CustomTabsLayout() {
         value={value}
         onValueChange={setValue}
       >
-        <Tabs.List>
-          <Tabs.Indicator
-            animation={{
-              translateX: { type: "timing", config: { duration: ANIMATION_DURATION } },
-            }}
-          />
-
-          <CustomTabTrigger name="home" asChild>
-            <SyncedTabsTrigger
-              icon="home"
-              label="Einkaufslisten"
-              value="1"
-              onFocusChange={setValue}
+        <View className="pb-2">
+          <Tabs.List>
+            <Tabs.Indicator
+              animation={{
+                translateX: { type: "timing", config: { duration: ANIMATION_DURATION } },
+              }}
             />
-          </CustomTabTrigger>
 
-          <Tabs.Separator
-            betweenValues={['1', '2']}
-            animation={{
-              opacity: { timingConfig: { duration: ANIMATION_DURATION } }
-            }}
-          />
+            <CustomTabTrigger name="home" asChild>
+              <SyncedTabsTrigger
+                icon="home"
+                label="Einkaufslisten"
+                value="1"
+                onFocusChange={setValue}
+              />
+            </CustomTabTrigger>
 
-          <CustomTabTrigger name="send" asChild>
-            <SyncedTabsTrigger
-              icon="paper-plane"
-              label="Senden"
-              value="2"
-              onFocusChange={setValue}
+            <Tabs.Separator
+              betweenValues={['1', '2']}
+              animation={{
+                opacity: { timingConfig: { duration: ANIMATION_DURATION } }
+              }}
             />
-          </CustomTabTrigger>
 
-          <Tabs.Separator
-            betweenValues={['2', '3']}
-            animation={{
-              opacity: { timingConfig: { duration: ANIMATION_DURATION } }
-            }}
-          />
+            <CustomTabTrigger name="send" asChild>
+              <SyncedTabsTrigger
+                icon="paper-plane"
+                label="Senden"
+                value="2"
+                onFocusChange={setValue}
+              />
+            </CustomTabTrigger>
 
-          <CustomTabTrigger name="receive" asChild>
-            <SyncedTabsTrigger
-              icon="download-outline"
-              label="Empfangen"
-              value="3"
-              onFocusChange={setValue}
+            <Tabs.Separator
+              betweenValues={['2', '3']}
+              animation={{
+                opacity: { timingConfig: { duration: ANIMATION_DURATION } }
+              }}
             />
-          </CustomTabTrigger>
 
-        </Tabs.List>
+            <CustomTabTrigger name="receive" asChild>
+              <SyncedTabsTrigger
+                icon="download-outline"
+                label="Empfangen"
+                value="3"
+                onFocusChange={setValue}
+              />
+            </CustomTabTrigger>
+
+          </Tabs.List>
+        </View>
       </Tabs>
 
     </CustomTabs>

@@ -1,6 +1,6 @@
 import { Button, Dialog } from "heroui-native";
 import { useState } from "react";
-import { View } from "react-native";
+import { Keyboard, View } from "react-native";
 import { Icon } from "../icon";
 import { ListForm, ListFormProps } from "./list-form";
 
@@ -23,7 +23,16 @@ export function ListFormDialog({ list, onSubmit, children }: ListFormProps & {
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay />
-        <Dialog.Content className="gap-4">
+        <Dialog.Content
+          className="gap-4"
+          onStartShouldSetResponder={() => {
+            if (Keyboard.isVisible()) {
+              Keyboard.dismiss()
+              return true
+            }
+            return false
+          }}
+        >
           <Dialog.Close variant="ghost" className="absolute top-1.5 right-1.5" />
 
           <View className="gap-1">

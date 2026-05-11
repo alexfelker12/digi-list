@@ -10,7 +10,7 @@ import { Card, cn, Dialog } from "heroui-native";
 import { Button } from "heroui-native/button";
 import { useAtom } from "jotai";
 import { useState } from "react";
-import { GestureResponderEvent, Pressable, View } from "react-native";
+import { GestureResponderEvent, Keyboard, Pressable, View } from "react-native";
 import ReorderableList, {
   ReorderableListRenderItemInfo, ReorderableListReorderEvent, reorderItems, useIsActive, useReorderableDrag
 } from "react-native-reorderable-list";
@@ -150,7 +150,16 @@ export function ListItemsForm({ listId, list, onSubmit }: ListItemFormProps) {
             >
               <Dialog.Portal>
                 <Dialog.Overlay />
-                <Dialog.Content className="gap-4">
+                <Dialog.Content
+                  className="gap-4"
+                  onStartShouldSetResponder={() => {
+                    if (Keyboard.isVisible()) {
+                      Keyboard.dismiss()
+                      return true
+                    }
+                    return false
+                  }}
+                >
                   <Dialog.Close variant="ghost" className="absolute top-1.5 right-1.5" />
 
                   <View className="gap-1">

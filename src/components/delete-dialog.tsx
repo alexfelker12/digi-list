@@ -1,7 +1,7 @@
 import { SQLiteRunResult } from "expo-sqlite";
 import { Button, ButtonSize, ButtonVariant, Dialog } from "heroui-native";
 import { useState } from "react";
-import { View } from "react-native";
+import { Keyboard, View } from "react-native";
 import { Icon } from "./icon";
 
 
@@ -40,7 +40,16 @@ export function DeleteDialog({
       </Dialog.Trigger>
       <Dialog.Portal>
         <Dialog.Overlay />
-        <Dialog.Content className="gap-4">
+        <Dialog.Content
+          className="gap-4"
+          onStartShouldSetResponder={() => {
+            if (Keyboard.isVisible()) {
+              Keyboard.dismiss()
+              return true
+            }
+            return false
+          }}
+        >
           <Dialog.Close variant="ghost" className="absolute top-1.5 right-1.5" />
 
           <View className="gap-1">

@@ -1,6 +1,8 @@
 import { useFieldContext } from "@/lib/form/form-context";
 import { unitMap, UNITS, type Unit } from '@/server/db/schema';
 import { cn, FieldError, Label, Select, TextField } from "heroui-native";
+import { useState } from "react";
+import { Keyboard } from "react-native";
 
 
 interface NumberFieldProps {
@@ -8,6 +10,7 @@ interface NumberFieldProps {
 }
 export function UnitFieldComponent({ label }: NumberFieldProps) {
   const field = useFieldContext<Unit | null>();
+  const [isOpen, setIsOpen] = useState(false)
 
   // create invalid state and error message
   const meta = field.state.meta
@@ -19,6 +22,11 @@ export function UnitFieldComponent({ label }: NumberFieldProps) {
       <Label className="text-sm text-muted">{label}</Label>
 
       <Select
+        isOpen={isOpen}
+        onOpenChange={(open) => {
+          setIsOpen(open)
+          if (open) Keyboard.dismiss()
+        }}
         value={{
           label: field.state.value ? unitMap[field.state.value] : "Einheit",
           value: field.state.value ?? ""
@@ -37,7 +45,7 @@ export function UnitFieldComponent({ label }: NumberFieldProps) {
           <Select.TriggerIndicator />
         </Select.Trigger>
 
-        <Select.Portal>
+        <Select.Portal disableFullWindowOverlay>
           <Select.Overlay />
           <Select.Content presentation="popover" width="trigger" offset={4} className="p-2">
             {UNITS.map((unit) => {

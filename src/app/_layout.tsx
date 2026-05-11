@@ -8,17 +8,18 @@ import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import { SQLiteProvider } from 'expo-sqlite';
 import { useEffect } from "react";
 
-import { DarkTheme, DefaultTheme, ThemeProvider } from "@react-navigation/native";
-import { useColorScheme } from "react-native";
+import * as SystemUI from 'expo-system-ui';
 
 import { HeroUINativeProvider } from 'heroui-native/provider';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { KeyboardProvider } from 'react-native-keyboard-controller';
 
-import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
 import { ErrorScreen } from "@/components/error-screen";
 import { LoadingScreen } from "@/components/loading-screen";
+import { JsStack, jsStackScreenOptions } from "@/lib/navigation/js-stack";
+import { useThemeColor } from "heroui-native";
 
 
 function MigrationsGuard({ children }: { children: React.ReactNode }) {
@@ -39,35 +40,30 @@ function MigrationsGuard({ children }: { children: React.ReactNode }) {
 
 const queryClient = new QueryClient();
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
+  const background = useThemeColor("background")
+  SystemUI.setBackgroundColorAsync(background)
 
   return (
     <QueryClientProvider client={queryClient}>
       <SQLiteProvider databaseName="digi-list.db">
         <MigrationsGuard>
 
-          <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-            <GestureHandlerRootView className="flex-1">
-              {/* <KeyboardProvider> */}
+          <GestureHandlerRootView className="flex-1">
+            <KeyboardProvider>
               <HeroUINativeProvider>
-
                 <StatusBar style="auto" />
-                <Stack screenOptions={{
-                  headerShown: false,
-                  animation: "ios_from_right",
-                  gestureEnabled: true
-                }}>
-                  <Stack.Screen name="(tabs)" options={{ animation: "none" }} />
-                  <Stack.Screen name="list/[id]/run" />
-                  <Stack.Screen name="list/[id]/edit/index" options={{ title: "Bearbeiten" }} />
-                  <Stack.Screen name="list/[id]/edit/add-item" options={{ title: "Produkt hinzufügen" }} />
-                  <Stack.Screen name="list/[id]/edit/item/[itemId]" options={{ title: "Produkt bearbeiten" }} />
-                </Stack>
+
+                <JsStack screenOptions={jsStackScreenOptions}>
+                  <JsStack.Screen name="(tabs)" options={{ headerShown: false }} />
+                  <JsStack.Screen name="list/[id]/run" />
+                  <JsStack.Screen name="list/[id]/edit/index" options={{ title: "Bearbeiten" }} />
+                  <JsStack.Screen name="list/[id]/edit/add-item" options={{ title: "Produkt hinzufügen" }} />
+                  <JsStack.Screen name="list/[id]/edit/item/[itemId]" options={{ title: "Produkt bearbeiten" }} />
+                </JsStack>
 
               </HeroUINativeProvider>
-              {/* </KeyboardProvider> */}
-            </GestureHandlerRootView>
-          </ThemeProvider>
+            </KeyboardProvider>
+          </GestureHandlerRootView>
 
         </MigrationsGuard>
       </SQLiteProvider>

@@ -1,9 +1,9 @@
 import { queryKeys } from "@/lib/queries/_helper";
-import { toggleCheckedListItemMutationOptions } from "@/lib/queries/list-item-queries";
+import { toggleCheckedListItemMutationOptions } from "@/lib/queries/run-list-queries";
 import { ListItemWithItem, unitMap } from "@/server/db";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Card, Checkbox, Dialog, PressableFeedback } from "heroui-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { GestureResponderEvent, Keyboard, View } from "react-native";
 import { StrikethroughText } from "../animated-strikethorugh-text";
 import { Icon } from "../icon";
@@ -15,16 +15,23 @@ type RunItemProps = BaseProps & {
   onPress?: (event: GestureResponderEvent) => void
 }
 export function RunItem({ item, onPress }: RunItemProps) {
-  const [isChecked, setIsChecked] = useState(item.checked ?? false)
+  const [isChecked, setIsChecked] = useState(item.checked)
   const purchaseAmount = getPurchaseAmount(item)
+
+  useEffect(() => {
+    // if items are refetched on page revisit or reset list explicitly set since useState arg doesn't set properly
+    setIsChecked(item.checked)
+  }, [item])
 
   const qc = useQueryClient();
   const { mutateAsync, isPending } = useMutation({
     ...toggleCheckedListItemMutationOptions(item.id),
     onSuccess: () => {
-      // TODO: currently invalidating 2 queries for each toggled check. Maybe optimize
       qc.invalidateQueries({ queryKey: queryKeys.checkedCount(item.listId) })
-      qc.invalidateQueries({ queryKey: queryKeys.listItems(item.listId) })
+      qc.invalidateQueries({
+        queryKey: queryKeys.listItems(item.listId),
+        refetchType: "none" // do not trigger refetch, checkbox state perfectly reflects state
+      })
     },
   })
 

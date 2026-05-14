@@ -22,4 +22,3 @@ function ItemSelectProvider(props: React.ComponentProps<typeof ItemSelectContext
 export {
   ItemSelectProvider, useItemSelect, type ItemSelectContextValue
 };
-

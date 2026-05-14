@@ -1,15 +1,15 @@
-import { checkedListItemsCountQueryOptions } from "@/lib/queries/list-item-queries";
+import { checkedListItemsCountQueryOptions } from "@/lib/queries/run-list-queries";
+import { useListItems } from "@/screens/context/list-items-context";
 import { useQuery } from "@tanstack/react-query";
-import { Chip, useThemeColor } from "heroui-native";
-import { ActivityIndicator, View } from "react-native";
+import { Button, Chip, Dialog, useThemeColor } from "heroui-native";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Keyboard, View } from "react-native";
 import Animated, { Easing, interpolate, interpolateColor, useAnimatedStyle, useDerivedValue, withTiming } from 'react-native-reanimated';
 import { Icon } from "../icon";
 
 
-type CheckedCountProps = {
-  listId: number
-}
-export function CheckedCount({ listId }: CheckedCountProps) {
+export function CheckedCount() {
+  const { listId } = useListItems()
   const { data: checkedCount, isPending } = useQuery(checkedListItemsCountQueryOptions(listId))
 
   if (isPending || !checkedCount) return <ActivityIndicator size={12} />
@@ -24,6 +24,8 @@ function CheckedCountInner({ checkedCount }: CheckedCountInnerProps) {
   // derived state
   const { checked, total } = checkedCount
   const isListCompleted = checked === total
+  const duration = 200
+  // const isListCompletedDelayed = useDelayedState(isListCompleted, 500)
 
   // theme colors
   const [defaultColor, defaultForeground, successSoft, successSoftForeground] =
@@ -32,10 +34,10 @@ function CheckedCountInner({ checkedCount }: CheckedCountInnerProps) {
   // animation progress
   const iconProgress = useDerivedValue(() =>
     withTiming(isListCompleted ? 1 : 0, {
-      duration: 300,
+      duration,
       easing: Easing.out(Easing.cubic),
     })
-  );
+  )
 
   // transition from default to success
   const wrapperStyle = useAnimatedStyle(() => ({
@@ -58,36 +60,40 @@ function CheckedCountInner({ checkedCount }: CheckedCountInnerProps) {
   }))
 
   return (
-    // Animated.View wraps Chip to handle backgroundColor animation
-    <Animated.View style={wrapperStyle} className="rounded-full">
-      <Chip variant="soft" size="lg" className="flex-col gap-0 pt-0.5 pb-1.5 bg-transparent" onPress={() => { }}>
-        <Animated.View className="flex-row items-center gap-1">
+    <>
+      {/* Animated.View wraps Chip to handle backgroundColor animation */}
+      <Animated.View style={wrapperStyle} className="rounded-full">
+        <Chip variant="soft" size="lg" className="flex-col gap-0 pt-0.5 pb-1.5 bg-transparent">
+          <Animated.View className="flex-row items-center gap-1">
 
-          {/* icon container – fixed size holds both icons absolutely */}
-          <View className="size-3">
-            <Animated.View className="absolute" style={radioStyle}>
-              <Icon name="radio-button-off" className="size-3" />
-            </Animated.View>
-            <Animated.View className="absolute" style={checkStyle}>
-              <Icon name="checkmark-circle" className="size-3 text-success" />
-            </Animated.View>
+            {/* icon container – fixed size holds both icons absolutely */}
+            <View className="size-3">
+              <Animated.View className="absolute" style={radioStyle}>
+                <Icon name="radio-button-off" className="size-3" />
+              </Animated.View>
+              <Animated.View className="absolute" style={checkStyle}>
+                <Icon name="checkmark-circle" className="size-3 text-success" />
+              </Animated.View>
+            </View>
+
+            {/* animated label text color – Chip.Label wraps Animated.Text */}
+            <Chip.Label>
+              <Animated.Text style={labelStyle}>
+                {checked}/{total} Produkte abgehackt
+              </Animated.Text>
+            </Chip.Label>
+
+          </Animated.View>
+
+          {/* progress bar */}
+          <View className="flex-row">
+            <RunProgress checked={checked} total={total} />
           </View>
+        </Chip>
+      </Animated.View>
 
-          {/* animated label text color – Chip.Label wraps Animated.Text */}
-          <Chip.Label>
-            <Animated.Text style={labelStyle}>
-              {checked}/{total} Produkte abgehackt
-            </Animated.Text>
-          </Chip.Label>
-
-        </Animated.View>
-
-        {/* progress bar */}
-        <View className="flex-row">
-          <RunProgress checked={checked} total={total} />
-        </View>
-      </Chip>
-    </Animated.View>
+      <ListCompleteDialog isCompleted={isListCompleted} />
+    </>
   );
 }
 
@@ -117,5 +123,54 @@ function RunProgress({ checked, total }: RunProgressProps) {
         style={animatedStyle}
       />
     </View>
+  );
+}
+
+type ListCompleteDialogProps = {
+  isCompleted: boolean
+}
+function ListCompleteDialog({ isCompleted }: ListCompleteDialogProps) {
+  const { listName } = useListItems()
+  const [isOpen, setIsOpen] = useState(false)
+
+  useEffect(() => {
+    if (!isCompleted) return;
+    setTimeout(() => setIsOpen(true), 200)
+  }, [isCompleted])
+
+  return (
+    <Dialog isOpen={isOpen} onOpenChange={setIsOpen}>
+      <Dialog.Portal>
+        <Dialog.Overlay />
+        <Dialog.Content
+          className="gap-4"
+          onStartShouldSetResponder={() => {
+            if (Keyboard.isVisible()) {
+              Keyboard.dismiss()
+              return true
+            }
+            return false
+          }}
+        >
+          <Dialog.Close variant="ghost" className="absolute top-1.5 right-1.5" />
+
+          <View className="gap-1">
+            <Dialog.Title className="leading-none">{listName} fertiggestellt!</Dialog.Title>
+            <Dialog.Description className="leading-snug">
+              Du hast alle Produkte auf der Einkaufsliste abgehackt, Glückwunsch!
+            </Dialog.Description>
+          </View>
+
+          <View className="flex-row gap-2 justify-end">
+            <Button variant="secondary" className="flex-1"
+              onPress={() => setIsOpen(false)}
+            >
+              Schließen
+            </Button>
+          </View>
+
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog>
   );
 }

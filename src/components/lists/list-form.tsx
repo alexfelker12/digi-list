@@ -1,6 +1,6 @@
 import { useAppForm } from "@/lib/form";
 import { listInsertSchema, type ListFormValues } from '@/server/db/schema';
-import { Button } from 'heroui-native/button';
+import { SQLiteRunResult } from "expo-sqlite";
 import { Separator } from "heroui-native/separator";
 import { View } from 'react-native';
 
@@ -9,7 +9,7 @@ const defaultValues: ListFormValues = { name: "Einkauf" };
 
 export interface ListFormProps {
   list?: ListFormValues;
-  onSubmit: (values: ListFormValues) => Promise<void>;
+  onSubmit: (values: ListFormValues) => Promise<SQLiteRunResult | void>;
 }
 export function ListForm({ list, onSubmit }: ListFormProps) {
   const form = useAppForm({
@@ -32,18 +32,9 @@ export function ListForm({ list, onSubmit }: ListFormProps) {
 
       <Separator />
 
-      <form.Subscribe selector={(s) => [s.canSubmit, s.isSubmitting]}>
-        {([canSubmit, isSubmitting]) => (
-          <Button
-            onPress={form.handleSubmit}
-            isDisabled={!canSubmit || isSubmitting}
-          >
-            <Button.Label>
-              {list ? 'Änderungen speichern' : 'Liste erstellen'}
-            </Button.Label>
-          </Button>
-        )}
-      </form.Subscribe>
+      <form.AppForm>
+        <form.SubmitButton label={list ? 'Speichern' : 'Liste erstellen'} />
+      </form.AppForm>
     </View>
   );
 }

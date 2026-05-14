@@ -3,6 +3,7 @@ import { toggleCheckedListItemMutationOptions } from "@/lib/queries/run-list-que
 import { ListItemWithItem, unitMap } from "@/server/db";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button, Card, Checkbox, Dialog, PressableFeedback } from "heroui-native";
+import { InfoIcon } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { GestureResponderEvent, Keyboard, View } from "react-native";
 import { StrikethroughText } from "../animated-strikethorugh-text";
@@ -88,7 +89,7 @@ function RunItemContext({ item }: RunItemContextProps) {
     <Dialog isOpen={isOpen} onOpenChange={setIsOpen}>
       <Dialog.Trigger asChild>
         <Button variant="tertiary" size="sm" hitSlop={8}>
-          <Icon name="information-circle" size={20} />
+          <Icon icon={InfoIcon} />
           <Button.Label>Info</Button.Label>
         </Button>
       </Dialog.Trigger>

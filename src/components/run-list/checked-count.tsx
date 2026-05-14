@@ -2,6 +2,7 @@ import { checkedListItemsCountQueryOptions } from "@/lib/queries/run-list-querie
 import { useListItems } from "@/screens/context/list-items-context";
 import { useQuery } from "@tanstack/react-query";
 import { Chip, useThemeColor } from "heroui-native";
+import { CircleCheckBigIcon, CircleIcon } from "lucide-react-native";
 import { ActivityIndicator, View } from "react-native";
 import Animated, { Easing, interpolate, interpolateColor, useAnimatedStyle, useDerivedValue, withTiming } from 'react-native-reanimated';
 import { Icon } from "../icon";
@@ -71,10 +72,10 @@ function CheckedCountInner({ checkedCount }: CheckedCountInnerProps) {
             {/* icon container – fixed size holds both icons absolutely */}
             <View className="size-3">
               <Animated.View className="absolute" style={radioStyle}>
-                <Icon name="radio-button-off" className="size-3" />
+                <Icon icon={CircleIcon} size={12} />
               </Animated.View>
               <Animated.View className="absolute" style={checkStyle}>
-                <Icon name="checkmark-circle" className="size-3 text-success" />
+                <Icon icon={CircleCheckBigIcon} size={12} className="text-success" />
               </Animated.View>
             </View>
 

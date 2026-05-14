@@ -5,6 +5,7 @@ import { ItemWithUriArray } from "@/server/db";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import { Button, Card } from "heroui-native";
+import { SquarePenIcon } from "lucide-react-native";
 import { View } from "react-native";
 import { DeleteDialog } from "../delete-dialog";
 import { Icon } from "../icon";
@@ -73,7 +74,7 @@ export function ProductItem({ item }: ItemTestProps) {
           }}
         >
           <Button variant="outline" size="sm" isIconOnly>
-            <Icon name="create" size={20} />
+            <Icon icon={SquarePenIcon} />
           </Button>
         </ItemFormSheet>
 

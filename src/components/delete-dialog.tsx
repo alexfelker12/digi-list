@@ -1,7 +1,9 @@
 import { SQLiteRunResult } from "expo-sqlite";
 import { Button, ButtonSize, ButtonVariant, Dialog } from "heroui-native";
-import { useState } from "react";
+import { Trash2Icon } from "lucide-react-native";
+import React, { useState } from "react";
 import { Keyboard, View } from "react-native";
+import { DialogBlurOverlay } from "./dialog/dialog-blur-overlay";
 import { Icon } from "./icon";
 
 
@@ -12,6 +14,7 @@ type DeleteDialogProps = {
   name: string
   onConfirm: () => Promise<SQLiteRunResult | void>
   actionPending: boolean
+  children?: React.ReactNode
 }
 export function DeleteDialog({
   triggerLabel = "",
@@ -19,27 +22,27 @@ export function DeleteDialog({
   triggerVariant = "danger-soft",
   name,
   onConfirm,
-  actionPending
+  actionPending,
+  children
 }: DeleteDialogProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
     <Dialog isOpen={isOpen} onOpenChange={setIsOpen}>
       <Dialog.Trigger asChild>
-
-        <Button
+        {children || (<Button
           size={triggerSize}
           variant={triggerVariant}
           isIconOnly
           isDisabled={actionPending}
         >
-          <Icon name="trash" className="text-danger-soft-foreground" size={20} />
+          <Icon icon={Trash2Icon} className="text-danger-soft-foreground" size={18} />
           {triggerLabel && <Button.Label>{triggerLabel}</Button.Label>}
-        </Button>
-
+        </Button>)}
       </Dialog.Trigger>
       <Dialog.Portal>
-        <Dialog.Overlay />
+        {/* <Dialog.Overlay /> */}
+        <DialogBlurOverlay />
         <Dialog.Content
           className="gap-4"
           onStartShouldSetResponder={() => {
@@ -71,7 +74,7 @@ export function DeleteDialog({
               }}
               isDisabled={actionPending}
             >
-              <Icon name="trash" className="text-danger-soft-foreground" size={20} />
+              <Icon icon={Trash2Icon} className="text-danger-soft-foreground" />
               <Button.Label>Ja, löschen</Button.Label>
             </Button>
           </View>

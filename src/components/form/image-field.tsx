@@ -3,6 +3,7 @@ import { getDisplayUri, saveImageToAppStorage } from '@/lib/utils';
 import { Image } from "expo-image";
 import { launchCameraAsync, launchImageLibraryAsync, requestCameraPermissionsAsync, requestMediaLibraryPermissionsAsync } from 'expo-image-picker';
 import { Button, Label, TextField } from "heroui-native";
+import { CameraIcon, ImagesIcon, XIcon } from "lucide-react-native";
 import { Alert, Pressable, View } from 'react-native';
 import { Icon } from "../icon";
 import { Text } from "../text";
@@ -63,7 +64,7 @@ export function ImageFieldComponent() {
                 onPress={() => field.handleChange(uris.filter((u) => u !== uriOrFilename))}
                 hitSlop={8}
               >
-                <Icon name="close-circle" className="text-white" size={20} />
+                <Icon icon={XIcon} className="text-white" />
               </Pressable>
             </View>
           ))}
@@ -77,13 +78,13 @@ export function ImageFieldComponent() {
       <View className="flex-row gap-3">
         <View className="flex-1">
           <Button variant="tertiary" onPress={pickFromCamera}>
-            <Icon name="camera-outline" className="text-foreground" size={20} />
+            <Icon icon={CameraIcon} className="text-foreground" />
             <Button.Label className="text-sm">Kamera</Button.Label>
           </Button>
         </View>
         <View className="flex-1">
           <Button variant="tertiary" onPress={pickFromGallery}>
-            <Icon name="images-outline" className="text-foreground" size={20} />
+            <Icon icon={ImagesIcon} className="text-foreground" />
             <Button.Label className="text-sm">Galerie</Button.Label>
           </Button>
         </View>

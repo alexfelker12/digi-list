@@ -9,6 +9,7 @@ import { ExpoRouter, router } from "expo-router";
 import { Card, cn, Dialog } from "heroui-native";
 import { Button } from "heroui-native/button";
 import { useAtom } from "jotai";
+import { PlusIcon, Trash2Icon } from "lucide-react-native";
 import { useState } from "react";
 import { GestureResponderEvent, Keyboard, Pressable, View } from "react-native";
 import ReorderableList, {
@@ -47,8 +48,8 @@ function DraggableRow({ item, onPress, onRemove }: RowProps) {
           </Card.Body>
 
           <Card.Footer className="justify-center">
-            <Button variant="danger-soft" size="sm" onPress={onRemove} isIconOnly>
-              <Icon name="trash" className="text-danger-soft-foreground" size={20} />
+            <Button variant="danger-soft" onPress={onRemove} className="h-10" isIconOnly>
+              <Icon icon={Trash2Icon} className="text-danger-soft-foreground" />
             </Button>
           </Card.Footer>
         </Pressable>
@@ -217,7 +218,7 @@ export function ListItemsForm({ listId, list, onSubmit }: ListItemFormProps) {
                     }
                   }}
                 >
-                  <Icon name="add" size={20} />
+                  <Icon icon={PlusIcon} />
                   <Button.Label>Hinzufügen</Button.Label>
                 </Button>
               </View>
@@ -248,6 +249,8 @@ const ListItemEditFields = withForm({
     onConfirm: () => { },
   },
   render: function Render({ form, index, buttonLabel, onConfirm }) {
+    // TODO: use this from heroui
+    // https://heroui.com/docs/native/components/bottom-sheet#with-keyboard-aware-input
     return (
       <View className="gap-4">
         <View className="gap-3 flex-row">

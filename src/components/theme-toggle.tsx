@@ -1,6 +1,7 @@
-import { Ionicons } from "@expo/vector-icons";
 import { Button } from 'heroui-native/button';
+import { MoonIcon, SunIcon } from "lucide-react-native";
 import { Uniwind, useUniwind } from 'uniwind';
+import { Icon } from "./icon";
 
 
 export function ThemeToggle() {
@@ -15,9 +16,9 @@ export function ThemeToggle() {
     >
       <Button.Label>
         {theme === 'light' ? (
-          <Ionicons name="sunny-outline" size={20} />
+          <Icon icon={SunIcon} />
         ) : (
-          <Ionicons name="moon-outline" size={20} />
+          <Icon icon={MoonIcon} />
         )}
       </Button.Label>
     </Button>

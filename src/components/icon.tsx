@@ -1,9 +1,20 @@
-import { Ionicons } from "@expo/vector-icons";
-import { cn } from "tailwind-variants";
+import { cn } from "heroui-native";
+import { LucideIcon, LucideProps } from "lucide-react-native";
 import { withUniwind } from "uniwind";
 
 
-export function Icon({ className, ...props }: React.ComponentProps<typeof Ionicons>) {
-  const StyledIcon = withUniwind(Ionicons)
-  return <StyledIcon className={cn("size-5 text-foreground", className)} {...props} />;
+type IconProps = LucideProps & {
+  icon: LucideIcon
+  size?: number
+}
+export function Icon({ icon, size = 20, className, ...props }: IconProps) {
+  const StyledIcon = withUniwind(icon)
+
+  return (
+    <StyledIcon
+      className={cn("text-foreground", className)}
+      size={size}
+      {...props}
+    />
+  );
 }

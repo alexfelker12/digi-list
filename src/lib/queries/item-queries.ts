@@ -46,7 +46,6 @@ export const updateItemMutationOptions = (id: number) => mutationOptions({
       .returning()
     return updated
   },
-
 })
 
 export const deleteItemMutationOptions = (id: number) => mutationOptions({

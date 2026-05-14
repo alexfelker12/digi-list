@@ -2,6 +2,7 @@ import { Text } from '@/components/text';
 import { Button } from "heroui-native";
 import { BottomSheet } from 'heroui-native/bottom-sheet';
 import { useState } from 'react';
+import { BottomSheetBlurOverlay } from "../dialog/bottom-sheet-blur-overlay";
 import { ItemForm, ItemFormProps } from "./item-form";
 
 
@@ -21,7 +22,8 @@ export function ItemFormSheet({ item, onSubmit, children }: ItemFormProps & {
         )}
       </BottomSheet.Trigger>
       <BottomSheet.Portal>
-        <BottomSheet.Overlay />
+        {/* <BottomSheet.Overlay /> */}
+        <BottomSheetBlurOverlay />
         <BottomSheet.Content
           contentContainerClassName="p-4 pt-0"
         >

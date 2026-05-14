@@ -1,5 +1,6 @@
 import { useFormContext } from "@/lib/form/form-context"
 import { Button } from "heroui-native"
+import { SaveIcon } from "lucide-react-native"
 import { Icon } from "../icon"
 
 
@@ -15,7 +16,7 @@ export function SubmitButton({ label }: SubmitButtonProps) {
           onPress={form.handleSubmit}
           isDisabled={isPristine || isSubmitting}
         >
-          <Icon name="save" className="text-accent-foreground" size={20} />
+          <Icon icon={SaveIcon} className="text-accent-foreground" />
           <Button.Label>{label}</Button.Label>
         </Button>
       )}

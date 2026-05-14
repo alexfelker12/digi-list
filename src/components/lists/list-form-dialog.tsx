@@ -1,4 +1,5 @@
 import { Button, Dialog } from "heroui-native";
+import { CirclePlusIcon } from "lucide-react-native";
 import { useState } from "react";
 import { Keyboard, View } from "react-native";
 import { Icon } from "../icon";
@@ -16,7 +17,7 @@ export function ListFormDialog({ list, onSubmit, children }: ListFormProps & {
       <Dialog.Trigger asChild>
         {children || (
           <Button variant="secondary">
-            <Icon name="add-circle-outline" size={20} />
+            <Icon icon={CirclePlusIcon} />
             <Button.Label>Erstellen</Button.Label>
           </Button>
         )}

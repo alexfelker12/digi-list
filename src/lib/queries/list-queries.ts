@@ -1,7 +1,7 @@
 import { db } from '@/server/db';
-import { lists } from '@/server/db/schema';
+import { ListFormValues, listItems, lists } from '@/server/db/schema';
 import { mutationOptions, queryOptions } from '@tanstack/react-query';
-import { eq } from 'drizzle-orm';
+import { count, desc, eq } from 'drizzle-orm';
 import { queryKeys } from "./_helper";
 
 
@@ -9,7 +9,17 @@ import { queryKeys } from "./_helper";
 export const allListsQueryOptions = () => queryOptions({
   queryKey: queryKeys.lists(),
   queryFn: async () => {
-    const rows = await db.select().from(lists);
+    const rows = await db.select({
+      id: lists.id,
+      createdAt: lists.createdAt,
+      name: lists.name,
+      itemsCount: count(listItems.id)
+    })
+      .from(lists)
+      .leftJoin(listItems, eq(lists.id, listItems.listId))
+      .groupBy(lists.id) //* group keeps lists with 0 items, without groupBy these would 
+      .orderBy(desc(lists.createdAt))
+
     return rows
   },
 })
@@ -21,6 +31,16 @@ export const createListMutationOptions = () => mutationOptions({
       .returning()
     return created
   }
+})
+
+export const updateListMutationOptions = (id: number) => mutationOptions({
+  mutationFn: async (data: ListFormValues) => {
+    const [updated] = await db.update(lists)
+      .set(data)
+      .where(eq(lists.id, id))
+      .returning()
+    return updated
+  },
 })
 
 export const deleteListMutationOptions = () => mutationOptions({

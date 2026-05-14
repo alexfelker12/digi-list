@@ -2,6 +2,7 @@ import { HapticTab } from "@/components/haptic-tab";
 import { Icon } from "@/components/icon";
 import { Tabs } from "expo-router";
 import { useThemeColor } from "heroui-native";
+import { DownloadIcon, HouseIcon, SendIcon } from "lucide-react-native";
 import { View } from "react-native";
 
 
@@ -22,21 +23,21 @@ export default function JsTabLayout() {
         name="index"
         options={{
           title: 'Einkaufslisten',
-          tabBarIcon: ({ color }) => <Icon size={28} name="home" color={color} />,
+          tabBarIcon: ({ color }) => <Icon icon={HouseIcon} size={28} color={color} />,
         }}
       />
       <Tabs.Screen
         name="send"
         options={{
           title: 'Senden',
-          tabBarIcon: ({ color }) => <Icon size={28} name="paper-plane" color={color} />,
+          tabBarIcon: ({ color }) => <Icon icon={SendIcon} size={28} color={color} />,
         }}
       />
       <Tabs.Screen
         name="receive"
         options={{
           title: 'Empfangen',
-          tabBarIcon: ({ color }) => <Icon size={28} name="download-outline" color={color} />,
+          tabBarIcon: ({ color }) => <Icon icon={DownloadIcon} size={28} color={color} />,
         }}
       />
     </Tabs>

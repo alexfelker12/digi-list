@@ -14,8 +14,8 @@ import { GestureResponderEvent, Keyboard, Pressable, View } from "react-native";
 import ReorderableList, {
   ReorderableListRenderItemInfo, ReorderableListReorderEvent, reorderItems, useIsActive, useReorderableDrag
 } from "react-native-reorderable-list";
+import { EmptyListIndicator } from "../empty-list-indicator";
 import { Icon } from "../icon";
-import { Text } from "../text";
 
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -119,11 +119,9 @@ export function ListItemsForm({ listId, list, onSubmit }: ListItemFormProps) {
                     }}
                   />
                 )}
-                ListEmptyComponent={(
-                  <View className="flex-1 justify-center items-center">
-                    <Text className="text-muted italic">Diese Einkaufsliste hat noch keine Produkte</Text>
-                  </View>
-                )}
+                ListEmptyComponent={
+                  <EmptyListIndicator message="Diese Einkaufsliste hat noch keine Produkte" />
+                }
                 contentContainerClassName="pt-px px-4 pb-24 overflow-x-auto"
                 cellAnimations={{ overflow: "visible" }}
               />

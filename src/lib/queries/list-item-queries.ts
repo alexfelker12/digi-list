@@ -1,7 +1,7 @@
 import { db } from '@/server/db';
 import { items, ListItemInsert, listItems, ListItemsFormValues } from '@/server/db/schema';
 import { mutationOptions, queryOptions } from '@tanstack/react-query';
-import { eq } from 'drizzle-orm';
+import { count, eq, sql } from 'drizzle-orm';
 import { parseItem, queryKeys } from "./_helper";
 
 
@@ -37,6 +37,30 @@ export const listItemsQueryOptions = (listId: number) => queryOptions({
 
     return parsedListItemsByListId
   },
+});
+
+export const checkedListItemsCountQueryOptions = (listId: number) => queryOptions({
+  queryKey: queryKeys.checkedCount(listId),
+  queryFn: async () => {
+    // const checkedListItemsCount = await db.$count(
+    //   listItems,
+    //   and(
+    //     eq(listItems.listId, listId),
+    //     eq(listItems.checked, true)
+    //   )
+    // )
+    const [checkedListItemsCount] = await db
+      .select({
+        total: count(),
+        // count rows where checked is '1' (sqlite boolean '0' / '1')
+        checked: count(sql`CASE WHEN ${listItems.checked} = 1 THEN 1 END`),
+      })
+      .from(listItems)
+      .where(eq(listItems.listId, listId))
+
+    return checkedListItemsCount
+  },
+  placeholderData: (previousData) => previousData,
 });
 
 // ─── List item Mutations ───────────────────────────────────────────────────────────

@@ -23,6 +23,8 @@ export const createListMutationOptions = () => mutationOptions({
   }
 })
 
-export const deleteListMutationOptions = (id: number) => mutationOptions({
-  mutationFn: () => db.delete(lists).where(eq(lists.id, id)),
+export const deleteListMutationOptions = () => mutationOptions({
+  mutationFn: async ({ id }: { id: number }) => {
+    await db.delete(lists).where(eq(lists.id, id))
+  }
 })

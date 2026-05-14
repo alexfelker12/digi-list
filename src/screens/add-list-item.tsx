@@ -1,3 +1,4 @@
+import { EmptyListIndicator } from "@/components/empty-list-indicator";
 import { ItemForm } from "@/components/items/item-form";
 import { SelectableItem } from "@/components/items/selectable-item";
 import { ScreenLayout } from "@/components/screen-layout";
@@ -7,7 +8,7 @@ import { allItemsQueryOptions, createItemMutationOptions } from "@/lib/queries/i
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Tabs } from "heroui-native";
 import { useState } from "react";
-import { ActivityIndicator, ScrollView, View } from "react-native";
+import { ActivityIndicator, FlatList, View } from "react-native";
 import { ItemSelectProvider, useItemSelect } from "./context/select-item-context";
 
 
@@ -51,12 +52,20 @@ function ListItemExistingContent() {
   const { data, isPending } = useQuery(allItemsQueryOptions())
 
   return (
-    <View className="flex-1">
-      {isPending && <ActivityIndicator size="large" className="text-accent" />}
-
-      <ScrollView contentContainerClassName="gap-2">
-        {data && data.map((item) => <SelectableItem key={item.id} item={item} />)}
-      </ScrollView>
+    <View className="flex-1 -mx-1">
+      <FlatList
+        data={data}
+        keyExtractor={(item) => String(item.id)}
+        renderItem={({ item }) => (
+          <SelectableItem item={item} />
+        )}
+        ListEmptyComponent={isPending ? (
+          <ActivityIndicator size="large" className="text-accent" />
+        ) : (
+          <EmptyListIndicator message="Noch keine Produkte erstellt" />
+        )}
+        contentContainerClassName="gap-2 px-1 pb-20"
+      />
     </View>
   );
 }

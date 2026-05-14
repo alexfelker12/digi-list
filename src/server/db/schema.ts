@@ -44,6 +44,7 @@ export type Item = typeof items.$inferSelect;
 export type ItemWithUriArray = Omit<Item, 'imageUris'> & { imageUris: string[] }
 export type NewItem = typeof items.$inferInsert;
 export type ListItem = typeof listItems.$inferSelect;
+export type ListItemWithItem = ListItem & { item: ItemWithUriArray }
 export type Unit = ListItem['unit'];
 export const UNITS: Unit[] = ['kg', 'g', 'l', 'ml', 'stk', 'pkg', 'el', 'tl'];
 

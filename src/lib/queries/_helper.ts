@@ -9,6 +9,7 @@ export const queryKeys = {
   lists: () => ['lists'] as const,
   list: (id: number) => ['lists', id] as const,
   listItems: (listId: number) => ['lists', listId, 'items'] as const,
+  checkedCount: (listId: number) => ['lists', listId, 'checked'] as const,
 };
 
 export const parseItem = ({ imageUris, ...rest }: Item): ParsedItem => {

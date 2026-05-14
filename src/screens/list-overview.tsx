@@ -4,7 +4,7 @@ import { ItemList } from "@/components/lists/list-item";
 import { ScreenLayout } from "@/components/screen-layout";
 import { Text } from "@/components/text";
 import { queryKeys } from "@/lib/queries/_helper";
-import { allListsQueryOptions, createListMutationOptions } from "@/lib/queries/list-queries";
+import { allListsQueryOptions, createListMutationOptions, deleteListMutationOptions } from "@/lib/queries/list-queries";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { Separator } from "heroui-native";
@@ -20,12 +20,18 @@ export default function ListOverviewScreen() {
 }
 
 function ListsListing() {
+  const qc = useQueryClient()
+  const invalidateListsQuery = () => qc.invalidateQueries({ queryKey: queryKeys.lists() })
+
   const { data, isPending } = useQuery(allListsQueryOptions())
 
-  const qc = useQueryClient();
-  const { mutateAsync } = useMutation({
+  const { mutateAsync: createList } = useMutation({
     ...createListMutationOptions(),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.lists() })
+    onSuccess: invalidateListsQuery
+  })
+  const { mutateAsync: deleteList, isPending: isDeletePending } = useMutation({
+    ...deleteListMutationOptions(),
+    onSuccess: invalidateListsQuery
   })
 
   const navigate = (pathname: "/list/[id]/run" | "/list/[id]/edit") => {
@@ -43,7 +49,7 @@ function ListsListing() {
 
         <ListFormDialog
           onSubmit={async (values) => {
-            await mutateAsync(values, {
+            await createList(values, {
               // navigate to list details
               onSuccess: (data) => {
                 navigateToEdit(data.id, data.name)
@@ -64,6 +70,7 @@ function ListsListing() {
               list={list}
               onPressRun={() => navigateToRun(list.id, list.name)}
               onPressEdit={() => navigateToEdit(list.id, list.name)}
+              onDelete={() => deleteList({ id: list.id })}
             />
           )}
           ListEmptyComponent={isPending ? (

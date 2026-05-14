@@ -1,11 +1,12 @@
 import { checkedListItemsCountQueryOptions } from "@/lib/queries/run-list-queries";
 import { useListItems } from "@/screens/context/list-items-context";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Chip, Dialog, useThemeColor } from "heroui-native";
-import { useEffect, useState } from "react";
-import { ActivityIndicator, Keyboard, View } from "react-native";
+import { Chip, useThemeColor } from "heroui-native";
+import { ActivityIndicator, View } from "react-native";
 import Animated, { Easing, interpolate, interpolateColor, useAnimatedStyle, useDerivedValue, withTiming } from 'react-native-reanimated';
 import { Icon } from "../icon";
+import { ListCompleteDialog } from "./list-complete-dialog";
+import { RunProgress } from "./run-progress";
 
 
 export function CheckedCount() {
@@ -13,6 +14,7 @@ export function CheckedCount() {
   const { data: checkedCount, isPending } = useQuery(checkedListItemsCountQueryOptions(listId))
 
   if (isPending || !checkedCount) return <ActivityIndicator size={12} />
+  if (checkedCount.checked + checkedCount.total === 0) return <RunListEmpty />
 
   return <CheckedCountInner checkedCount={checkedCount} />
 }
@@ -97,80 +99,22 @@ function CheckedCountInner({ checkedCount }: CheckedCountInnerProps) {
   );
 }
 
-type RunProgressProps = {
-  total: number
-  checked: number
-}
-const calcProgress = ({ checked, total }: RunProgressProps) => ((checked / total) * 100)
-function RunProgress({ checked, total }: RunProgressProps) {
-  const progressValue = calcProgress({ checked, total });
-
-  const progress = useDerivedValue(() =>
-    withTiming(progressValue, {
-      duration: 150,
-      easing: Easing.out(Easing.cubic),
-    })
-  );
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    width: `${progress.value}%`,
-  }));
-
+function RunListEmpty() {
   return (
-    <View className="relative h-0.5 rounded-full flex-1 bg-muted overflow-hidden">
-      <Animated.View
-        className="absolute h-0.5 rounded-full bg-success"
-        style={animatedStyle}
-      />
-    </View>
-  );
-}
+    <Chip
+      variant="soft"
+      color="default"
+      size="lg"
+      className="flex-col gap-0 pt-0.5 pb-1.5"
+    >
+      <Chip.Label>
+        keine Produkte
+      </Chip.Label>
 
-type ListCompleteDialogProps = {
-  isCompleted: boolean
-}
-function ListCompleteDialog({ isCompleted }: ListCompleteDialogProps) {
-  const { listName } = useListItems()
-  const [isOpen, setIsOpen] = useState(false)
-
-  useEffect(() => {
-    if (!isCompleted) return;
-    setTimeout(() => setIsOpen(true), 200)
-  }, [isCompleted])
-
-  return (
-    <Dialog isOpen={isOpen} onOpenChange={setIsOpen}>
-      <Dialog.Portal>
-        <Dialog.Overlay />
-        <Dialog.Content
-          className="gap-4"
-          onStartShouldSetResponder={() => {
-            if (Keyboard.isVisible()) {
-              Keyboard.dismiss()
-              return true
-            }
-            return false
-          }}
-        >
-          <Dialog.Close variant="ghost" className="absolute top-1.5 right-1.5" />
-
-          <View className="gap-1">
-            <Dialog.Title className="leading-none">{listName} fertiggestellt!</Dialog.Title>
-            <Dialog.Description className="leading-snug">
-              Du hast alle Produkte auf der Einkaufsliste abgehackt, Glückwunsch!
-            </Dialog.Description>
-          </View>
-
-          <View className="flex-row gap-2 justify-end">
-            <Button variant="secondary" className="flex-1"
-              onPress={() => setIsOpen(false)}
-            >
-              Schließen
-            </Button>
-          </View>
-
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog>
+      {/* mock progress bar, never gets updated */}
+      <View className="flex-row">
+        <RunProgress checked={0} total={1} />
+      </View>
+    </Chip>
   );
 }

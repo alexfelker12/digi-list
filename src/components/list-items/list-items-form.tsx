@@ -191,7 +191,7 @@ export function ListItemsForm({ listId, list, onSubmit }: ListItemFormProps) {
           </View>
 
           <FloatingBottomContent className="via-background/80">
-            <View className="flex-row items-center justify-between gap-3 pb-4">
+            <View className="flex-row items-center justify-between gap-2 pb-4">
 
               <View className="flex-1">
                 <Button

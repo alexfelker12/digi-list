@@ -23,7 +23,7 @@ export default function AddListItemScreen() {
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
-          className="flex-1"
+          className="flex-1 pb-2"
         >
           <Tabs.List>
             <Tabs.Indicator />
@@ -56,15 +56,13 @@ function ListItemExistingContent() {
       <FlatList
         data={data}
         keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }) => (
-          <SelectableItem item={item} />
-        )}
+        renderItem={({ item }) => <SelectableItem item={item} />}
         ListEmptyComponent={isPending ? (
           <ActivityIndicator size="large" className="text-accent" />
         ) : (
           <EmptyListIndicator message="Noch keine Produkte erstellt" />
         )}
-        contentContainerClassName="gap-2 px-1 pb-20"
+        contentContainerClassName="gap-2 px-1 pb-1"
       />
     </View>
   );

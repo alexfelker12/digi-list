@@ -6,6 +6,7 @@ import { ScreenLayout } from "@/components/screen-layout";
 import { listItemsQueryOptions } from "@/lib/queries/list-item-queries";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
+import { Separator } from "heroui-native";
 import { ActivityIndicator, FlatList, View } from "react-native";
 import { ListItemsProvider } from "./context/list-items-context";
 
@@ -21,30 +22,28 @@ export default function RunListScreen() {
 
   return (
     <ScreenLayout title={listName ?? "Einkaufsliste"} showBack className="pb-0">
-      <View className="flex-1 gap-4">
+      <ListItemsProvider value={{ listId, listName }}>
+        <View className="flex-row items-center justify-between gap-4">
+          <CheckedCount />
+          <ResetList />
+        </View>
 
-        <ListItemsProvider value={{ listId, listName }}>
-          <View className="flex-row items-center justify-between gap-4">
-            <CheckedCount />
-            <ResetList />
-          </View>
+        <Separator />
 
-          <View className="flex-1 -mx-1">
-            <FlatList
-              data={data}
-              keyExtractor={(list) => String(list.id)}
-              renderItem={({ item }) => <RunItem item={item} />}
-              ListEmptyComponent={isPending ? (
-                <ActivityIndicator size="large" className="text-accent" />
-              ) : (
-                <EmptyListIndicator message={`${listName} hat noch keine Produkte`} />
-              )}
-              contentContainerClassName="gap-2 px-1 pb-20"
-            />
-          </View>
-        </ListItemsProvider>
-
-      </View>
+        <View className="flex-1 -mx-1">
+          <FlatList
+            data={data}
+            keyExtractor={(list) => String(list.id)}
+            renderItem={({ item }) => <RunItem item={item} />}
+            ListEmptyComponent={isPending ? (
+              <ActivityIndicator size="large" className="text-accent" />
+            ) : (
+              <EmptyListIndicator message={`${listName} hat noch keine Produkte`} />
+            )}
+            contentContainerClassName="gap-2 px-1 pb-20"
+          />
+        </View>
+      </ListItemsProvider>
     </ScreenLayout>
   );
 }

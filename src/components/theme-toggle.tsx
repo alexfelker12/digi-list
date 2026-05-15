@@ -16,12 +16,12 @@ export function ThemeToggle() {
     })
   )
 
-  const radioStyle = useAnimatedStyle(() => ({
+  const lightModeStyle = useAnimatedStyle(() => ({
     opacity: 1 - iconProgress.value,
     transform: [{ scale: interpolate(iconProgress.value, [0, 1], [1, 0.5]) }],
   }))
 
-  const checkStyle = useAnimatedStyle(() => ({
+  const darkModeStyle = useAnimatedStyle(() => ({
     opacity: iconProgress.value,
     transform: [{ scale: interpolate(iconProgress.value, [0, 1], [0.5, 1]) }],
   }))
@@ -31,13 +31,14 @@ export function ThemeToggle() {
       onPress={() => Uniwind.setTheme(theme === "light" ? "dark" : "light")}
       size="sm"
       variant="outline"
+      animation={{ scale: "disabled" }}
       isIconOnly
     >
-      <View className="absolute size-5">
-        <Animated.View className="absolute" style={radioStyle}>
+      <View className="relative size-5">
+        <Animated.View className="absolute" style={lightModeStyle}>
           <Icon icon={SunIcon} />
         </Animated.View>
-        <Animated.View className="absolute" style={checkStyle}>
+        <Animated.View className="absolute" style={darkModeStyle}>
           <Icon icon={MoonIcon} />
         </Animated.View>
       </View>

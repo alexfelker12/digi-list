@@ -12,14 +12,20 @@ type ResetListDialogProps = {
   actionPending: boolean
 }
 export function ResetListDialog({ onConfirm, actionPending }: ResetListDialogProps) {
-  const { listName } = useListItems()
+  const { listName, itemsCount } = useListItems()
   const [isOpen, setIsOpen] = useState(false)
 
+  console.log(itemsCount)
+  console.log(itemsCount === 0)
+
   return (
-    <Dialog isOpen={isOpen} onOpenChange={setIsOpen}>
+    <Dialog isOpen={isOpen} onOpenChange={(open) => {
+      if (itemsCount === 0 && open) return;
+      setIsOpen(open)
+    }}>
 
       <Dialog.Trigger asChild>
-        <Button variant="tertiary" size="sm" isIconOnly>
+        <Button variant="tertiary" size="sm" isDisabled={itemsCount === 0} isIconOnly>
           <Icon icon={RotateCcwIcon} />
         </Button>
       </Dialog.Trigger>

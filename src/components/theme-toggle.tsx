@@ -17,13 +17,13 @@ export function ThemeToggle() {
   )
 
   const lightModeStyle = useAnimatedStyle(() => ({
-    opacity: 1 - iconProgress.value,
-    transform: [{ scale: interpolate(iconProgress.value, [0, 1], [1, 0.5]) }],
+    opacity: iconProgress.value,
+    transform: [{ scale: interpolate(iconProgress.value, [0, 1], [0.5, 1]) }],
   }))
 
   const darkModeStyle = useAnimatedStyle(() => ({
-    opacity: iconProgress.value,
-    transform: [{ scale: interpolate(iconProgress.value, [0, 1], [0.5, 1]) }],
+    opacity: 1 - iconProgress.value,
+    transform: [{ scale: interpolate(iconProgress.value, [0, 1], [1, 0.5]) }],
   }))
 
   return (

@@ -5,7 +5,7 @@ import { List } from "@/server/db";
 import { useMutation, useMutationState, useQueryClient } from "@tanstack/react-query";
 import { SQLiteRunResult } from "expo-sqlite";
 import { Button, Card, Menu, PressableFeedback, Separator } from "heroui-native";
-import { EditIcon, EllipsisVerticalIcon, FolderPenIcon, Trash2Icon } from 'lucide-react-native';
+import { EllipsisVerticalIcon, FolderPenIcon, NotebookPenIcon, Trash2Icon } from 'lucide-react-native';
 import { GestureResponderEvent, View } from "react-native";
 import { Icon } from "../icon";
 import { ListFormDialog } from "./list-form-dialog";
@@ -75,7 +75,7 @@ export function ItemList({ list, onPressRun, onPressEdit, onDelete }: ListItemPr
                 {/* go to edit list items screen */}
                 <Menu.Item className="items-start" onPress={onPressEdit}>
                   <View className="mt-1">
-                    <Icon icon={EditIcon} className="text-muted" size={16} />
+                    <Icon icon={NotebookPenIcon} className="text-muted" size={16} />
                   </View>
                   <View className="flex-1">
                     <Menu.ItemTitle>Produkte bearbeiten</Menu.ItemTitle>

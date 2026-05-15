@@ -1,26 +1,46 @@
-import { Button } from 'heroui-native/button';
+import { Button } from "heroui-native/button";
 import { MoonIcon, SunIcon } from "lucide-react-native";
-import { Uniwind, useUniwind } from 'uniwind';
+import { View } from "react-native";
+import Animated, { Easing, interpolate, useAnimatedStyle, useDerivedValue, withTiming } from "react-native-reanimated";
+import { Uniwind, useUniwind } from "uniwind";
 import { Icon } from "./icon";
 
 
 export function ThemeToggle() {
   const { theme } = useUniwind();
 
+  const iconProgress = useDerivedValue(() =>
+    withTiming(theme === "light" ? 1 : 0, {
+      duration: 150,
+      easing: Easing.out(Easing.cubic),
+    })
+  )
+
+  const radioStyle = useAnimatedStyle(() => ({
+    opacity: 1 - iconProgress.value,
+    transform: [{ scale: interpolate(iconProgress.value, [0, 1], [1, 0.5]) }],
+  }))
+
+  const checkStyle = useAnimatedStyle(() => ({
+    opacity: iconProgress.value,
+    transform: [{ scale: interpolate(iconProgress.value, [0, 1], [0.5, 1]) }],
+  }))
+
   return (
     <Button
-      onPress={() => Uniwind.setTheme(theme === 'light' ? 'dark' : 'light')}
+      onPress={() => Uniwind.setTheme(theme === "light" ? "dark" : "light")}
       size="sm"
       variant="outline"
       isIconOnly
     >
-      <Button.Label>
-        {theme === 'light' ? (
+      <View className="absolute size-5">
+        <Animated.View className="absolute" style={radioStyle}>
           <Icon icon={SunIcon} />
-        ) : (
+        </Animated.View>
+        <Animated.View className="absolute" style={checkStyle}>
           <Icon icon={MoonIcon} />
-        )}
-      </Button.Label>
+        </Animated.View>
+      </View>
     </Button>
   );
 }

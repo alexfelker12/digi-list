@@ -1,18 +1,26 @@
 import { cn } from "heroui-native";
-import { LucideIcon, LucideProps } from "lucide-react-native";
-import { withUniwind } from "uniwind";
+import { LucideIcon as LucideIconComponent, LucideProps } from "lucide-react-native";
+import { useResolveClassNames } from "uniwind";
 
 
 type IconProps = LucideProps & {
-  icon: LucideIcon
-  size?: number
+  icon: LucideIconComponent
 }
-export function Icon({ icon, size = 20, className, ...props }: IconProps) {
-  const StyledIcon = withUniwind(icon)
+export function Icon({
+  icon: LucideIcon,
+  className,
+  style,
+  size = 20,
+  ...props
+}: IconProps) {
+  const classNameStyles = useResolveClassNames(cn(
+    "text-foreground",
+    className
+  ) ?? "")
 
   return (
-    <StyledIcon
-      className={cn("text-foreground", className)}
+    <LucideIcon
+      style={[classNameStyles, style]}
       size={size}
       {...props}
     />

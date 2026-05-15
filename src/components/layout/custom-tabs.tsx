@@ -1,7 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
-import { Ref, useEffect, useRef, useState } from "react";
-import { Animated, View } from "react-native";
-
 import {
   TabList as CustomTabList,
   Tabs as CustomTabs,
@@ -11,6 +7,10 @@ import {
 } from 'expo-router/ui';
 import { useThemeColor } from 'heroui-native';
 import { Tabs } from "heroui-native/tabs";
+import { DownloadIcon, LucideIcon, NotebookTextIcon, TablePropertiesIcon } from "lucide-react-native";
+import { Ref, useEffect, useRef, useState } from "react";
+import { Animated, View } from "react-native";
+import { Icon } from "../icon";
 
 
 const ANIMATION_DURATION = 150
@@ -24,8 +24,8 @@ export function CustomTabsLayout() {
       {/* Hidden TabList — just defines routes, no UI */}
       <CustomTabList className="hidden">
         <CustomTabTrigger name="home" href="/" />
-        <CustomTabTrigger name="send" href="/(tabs)/send" />
-        <CustomTabTrigger name="receive" href="/(tabs)/receive" />
+        <CustomTabTrigger name="products" href="/(tabs)/products" />
+        <CustomTabTrigger name="transfer" href="/(tabs)/transfer" />
       </CustomTabList>
 
       {/* Visual tab bar using HeroUI, with TabTriggers outside TabList */}
@@ -44,7 +44,7 @@ export function CustomTabsLayout() {
 
             <CustomTabTrigger name="home" asChild>
               <SyncedTabsTrigger
-                icon="home"
+                icon={NotebookTextIcon}
                 label="Einkaufslisten"
                 value="1"
                 onFocusChange={setValue}
@@ -58,10 +58,10 @@ export function CustomTabsLayout() {
               }}
             />
 
-            <CustomTabTrigger name="send" asChild>
+            <CustomTabTrigger name="products" asChild>
               <SyncedTabsTrigger
-                icon="paper-plane"
-                label="Senden"
+                icon={TablePropertiesIcon}
+                label="Produkte"
                 value="2"
                 onFocusChange={setValue}
               />
@@ -74,10 +74,10 @@ export function CustomTabsLayout() {
               }}
             />
 
-            <CustomTabTrigger name="receive" asChild>
+            <CustomTabTrigger name="transfer" asChild>
               <SyncedTabsTrigger
-                icon="download-outline"
-                label="Empfangen"
+                icon={DownloadIcon}
+                label="Transfer"
                 value="3"
                 onFocusChange={setValue}
               />
@@ -93,20 +93,20 @@ export function CustomTabsLayout() {
 
 type SyncedTabsTriggerProps = TabTriggerSlotProps & {
   value: string
-  onFocusChange: (value: string) => void
   label: string
-  icon: React.ComponentProps<typeof Ionicons>["name"]
+  icon: LucideIcon
+  onFocusChange: (value: string) => void
   ref?: Ref<View>
 };
 export function SyncedTabsTrigger({
-  icon,
   label,
-  isFocused,
   value,
+  icon,
+  isFocused,
   onFocusChange,
   ...props
 }: SyncedTabsTriggerProps) {
-  const [accent, muted, foreground] = useThemeColor(["accent", "muted", "foreground"]);
+  const [muted, foreground] = useThemeColor(["muted", "foreground"]);
   const focusAnimation = useRef(new Animated.Value(isFocused ? 1 : 0)).current;
 
   useEffect(() => {
@@ -118,11 +118,6 @@ export function SyncedTabsTrigger({
     }).start();
   }, [isFocused]);
 
-  const iconColor = focusAnimation.interpolate({
-    inputRange: [0, 1],
-    outputRange: [muted, accent],
-  });
-
   const textColor = focusAnimation.interpolate({
     inputRange: [0, 1],
     outputRange: [muted, foreground],
@@ -131,9 +126,10 @@ export function SyncedTabsTrigger({
   return (
     <Tabs.Trigger className="flex-1" value={value} {...props}>
       <View className="flex-1 flex-col gap-0.5 items-center">
-        <Animated.Text style={{ color: iconColor }}>
-          <Ionicons name={icon} size={24} />
-        </Animated.Text>
+        <Icon icon={icon} className="text-muted" size={24} />
+        <Animated.View style={{ opacity: focusAnimation, position: "absolute" }}>
+          <Icon icon={icon} className="text-accent" size={24} />
+        </Animated.View>
         <Animated.Text className="text-sm" style={{ color: textColor }} numberOfLines={1}>
           {label}
         </Animated.Text>

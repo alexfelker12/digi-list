@@ -1,36 +1,43 @@
 import { queryKeys } from "@/lib/queries/_helper";
 import { toggleCheckedListItemMutationOptions } from "@/lib/queries/run-list-queries";
-import { ListItemWithItem, unitMap } from "@/server/db";
+import { getDisplayUri } from "@/lib/utils";
+import { useRunListItem } from "@/screens/context/run-list-item-context";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button, Card, Checkbox, Dialog, PressableFeedback } from "heroui-native";
+import { Image } from "expo-image";
+import { BottomSheet, Button, Card, Checkbox, PressableFeedback, Separator } from "heroui-native";
 import { InfoIcon } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { GestureResponderEvent, Keyboard, View } from "react-native";
-import { StrikethroughText } from "../animated-strikethorugh-text";
-import { Icon } from "../icon";
-import { Text } from "../text";
+import { GestureResponderEvent, Pressable, ScrollView, useWindowDimensions, View } from "react-native";
+
+import { StrikethroughText } from "@/components/animated-strikethorugh-text";
+import { Icon } from "@/components/icon";
+import { ImageViewerModal } from "@/components/image/image-viewer-modal";
+import { Text } from "@/components/text";
 
 
-type BaseProps = { item: ListItemWithItem }
-type RunItemProps = BaseProps & {
+type RunItemProps = {
   onPress?: (event: GestureResponderEvent) => void
 }
-export function RunItem({ item, onPress }: RunItemProps) {
-  const [isChecked, setIsChecked] = useState(item.checked)
-  const purchaseAmount = getPurchaseAmount(item)
+export function RunItem({ onPress }: RunItemProps) {
+  const { listItem, purchaseAmount } = useRunListItem()
+  const { checked, id, listId, item, notes } = listItem
+  const [isChecked, setIsChecked] = useState(checked)
+
+  // has notes and/or images
+  const hasMoreContext = !!notes || item.imageUris.length > 0
 
   useEffect(() => {
     // if items are refetched on page revisit or reset list explicitly set since useState arg doesn't set properly
-    setIsChecked(item.checked)
-  }, [item])
+    setIsChecked(checked)
+  }, [listItem])
 
   const qc = useQueryClient();
   const { mutateAsync, isPending } = useMutation({
-    ...toggleCheckedListItemMutationOptions(item.id),
+    ...toggleCheckedListItemMutationOptions(id),
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.checkedCount(item.listId) })
+      qc.invalidateQueries({ queryKey: queryKeys.checkedCount(listId) })
       qc.invalidateQueries({
-        queryKey: queryKeys.listItems(item.listId),
+        queryKey: queryKeys.listItems(listId),
         refetchType: "none" // do not trigger refetch, checkbox state perfectly reflects state
       })
     },
@@ -42,7 +49,6 @@ export function RunItem({ item, onPress }: RunItemProps) {
       onPress={(event) => {
         if (isPending) return
         onPress?.(event)
-
         setIsChecked(prev => !prev)
         // use inverse, since isChecked is not yet set to true at this point of execution
         mutateAsync({ checked: !isChecked })
@@ -58,71 +64,105 @@ export function RunItem({ item, onPress }: RunItemProps) {
         />
 
         <Card.Body className="flex-1">
-          <Card.Title
-          // TODO: without animation 
-          // className={cn(
-          //   "leading-tight text-accent",
-          //   isChecked && "line-through text-muted/75"
-          // )}
-          >
+          <Card.Title>
             <StrikethroughText isChecked={isChecked} className="leading-tight text-lg">
-              {item.item.name}
+              {item.name}
             </StrikethroughText>
           </Card.Title>
           <Card.Description className="leading-snug">{purchaseAmount}</Card.Description>
         </Card.Body>
 
-        <Card.Footer>
-          <RunItemContext item={item} />
-        </Card.Footer>
+        {hasMoreContext && (
+          <Card.Footer>
+            <RunItemContext />
+          </Card.Footer>
+        )}
       </Card>
     </PressableFeedback>
   );
 }
 
-type RunItemContextProps = BaseProps
-function RunItemContext({ item }: RunItemContextProps) {
+function RunItemContext() {
+  const { listItem: { notes, item: { name, imageUris } }, purchaseAmount } = useRunListItem()
+  const hasImageUris = imageUris.length > 0
+  const hasMultipleImages = imageUris.length > 1
+
   const [isOpen, setIsOpen] = useState(false)
-  const purchaseAmount = getPurchaseAmount(item)
+  const [viewerVisible, setViewerVisible] = useState(false)
+  const [viewerIndex, setViewerIndex] = useState(0)
+  const { width } = useWindowDimensions()
+  const paddingAwareSize = width
+    - 40 // p-5 -> 2x 20px padding left and right
+    - (hasMultipleImages ? 100 : 0) // multiple images should be smaller to indicate horizontal scrolling
 
   return (
-    <Dialog isOpen={isOpen} onOpenChange={setIsOpen}>
-      <Dialog.Trigger asChild>
-        <Button variant="tertiary" size="sm" hitSlop={8}>
-          <Icon icon={InfoIcon} />
-          <Button.Label>Info</Button.Label>
-        </Button>
-      </Dialog.Trigger>
+    <>
+      <BottomSheet isOpen={isOpen} onOpenChange={setIsOpen}>
+        <BottomSheet.Trigger asChild>
+          <Button variant="tertiary" size="sm" hitSlop={8}>
+            <Icon icon={InfoIcon} />
+            <Button.Label>Info</Button.Label>
+          </Button>
+        </BottomSheet.Trigger>
 
-      <Dialog.Portal>
-        <Dialog.Overlay />
-        <Dialog.Content
-          className="gap-4"
-          onStartShouldSetResponder={() => {
-            if (Keyboard.isVisible()) {
-              Keyboard.dismiss()
-              return true
-            }
-            return false
-          }}
-        >
-          <Dialog.Close variant="ghost" className="absolute top-1.5 right-1.5" />
+        <BottomSheet.Portal>
+          <BottomSheet.Overlay />
+          <BottomSheet.Content
+            activeOffsetY={[-10, 10]}
+            failOffsetX={[-15, 15]}
+            contentContainerClassName="pt-1 gap-4"
+          >
 
-          <View className="gap-1">
-            <Dialog.Title className="leading-none text-accent">{item.item.name}</Dialog.Title>
-            <Dialog.Description className="leading-snug">{purchaseAmount}</Dialog.Description>
-          </View>
+            {/* name, amount and notes */}
+            <View className="gap-1">
+              <BottomSheet.Title className="leading-none text-accent">{name}</BottomSheet.Title>
+              <BottomSheet.Description className="leading-snug">{purchaseAmount}</BottomSheet.Description>
+            </View>
 
-          <View>
-            <Text>{item.item.imageUris}</Text>
-            <Text>{item.notes}</Text>
-            {/* hier dann content, bilder etc... */}
-          </View>
+            {notes && <>
+              <Separator />
+              <Text className="text-foreground/75 text-base">{notes}</Text>
+              <Separator />
+            </>}
 
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog>
+            {/* images with horizontal scroll, use image viewer modal on press */}
+            {hasImageUris && (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerClassName="gap-2"
+              >
+                {imageUris.map((uri, i) => (
+                  <Pressable
+                    key={`${uri}-${i}`}
+                    onPress={() => {
+                      setViewerIndex(i)
+                      setViewerVisible(true)
+                    }}
+                    className="rounded-xl overflow-hidden"
+                  >
+                    <Image
+                      source={{ uri: getDisplayUri(uri) }}
+                      style={{ width: paddingAwareSize, height: paddingAwareSize }}
+                      contentFit="cover"
+                      className="rounded-xl"
+                    />
+                  </Pressable>
+                ))}
+              </ScrollView>
+            )}
+
+          </BottomSheet.Content>
+        </BottomSheet.Portal>
+      </BottomSheet>
+
+      {/* fullscreen image viewer */}
+      {hasImageUris && <ImageViewerModal
+        visible={viewerVisible}
+        uris={imageUris}
+        initialIndex={viewerIndex}
+        onClose={() => setViewerVisible(false)}
+      />}
+    </>
   );
 }
-
-const getPurchaseAmount = ({ quantity, unit }: BaseProps["item"]) => `${quantity} ${unit && unitMap[unit]}`

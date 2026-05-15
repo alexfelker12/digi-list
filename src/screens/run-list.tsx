@@ -4,11 +4,13 @@ import { ResetList } from "@/components/run-list/reset-list";
 import { RunItem } from "@/components/run-list/run-item";
 import { ScreenLayout } from "@/components/screen-layout";
 import { listItemsQueryOptions } from "@/lib/queries/list-item-queries";
+import { getPurchaseAmount } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
 import { Separator } from "heroui-native";
 import { ActivityIndicator, FlatList, View } from "react-native";
 import { ListItemsProvider } from "./context/list-items-context";
+import { RunListItemProvider } from "./context/run-list-item-context";
 
 
 export default function RunListScreen() {
@@ -19,10 +21,11 @@ export default function RunListScreen() {
   const listId = +id
 
   const { data, isPending } = useQuery(listItemsQueryOptions(listId))
+  const itemsCount = data?.length ?? 0
 
   return (
     <ScreenLayout title={listName ?? "Einkaufsliste"} showBack className="pb-0">
-      <ListItemsProvider value={{ listId, listName }}>
+      <ListItemsProvider value={{ listId, listName, itemsCount }}>
         <View className="flex-row items-center justify-between gap-4">
           <CheckedCount />
           <ResetList />
@@ -34,7 +37,15 @@ export default function RunListScreen() {
           <FlatList
             data={data}
             keyExtractor={(list) => String(list.id)}
-            renderItem={({ item }) => <RunItem item={item} />}
+            renderItem={({ item: listItem }) => {
+              const { quantity, unit } = listItem
+              const purchaseAmount = getPurchaseAmount({ quantity, unit })
+              return (
+                <RunListItemProvider value={{ listItem, purchaseAmount }}>
+                  <RunItem />
+                </RunListItemProvider>
+              )
+            }}
             ListEmptyComponent={isPending ? (
               <ActivityIndicator size="large" className="text-accent" />
             ) : (

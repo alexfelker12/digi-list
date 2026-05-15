@@ -15,9 +15,6 @@ export function ResetListDialog({ onConfirm, actionPending }: ResetListDialogPro
   const { listName, itemsCount } = useListItems()
   const [isOpen, setIsOpen] = useState(false)
 
-  console.log(itemsCount)
-  console.log(itemsCount === 0)
-
   return (
     <Dialog isOpen={isOpen} onOpenChange={(open) => {
       if (itemsCount === 0 && open) return;
@@ -50,13 +47,17 @@ export function ResetListDialog({ onConfirm, actionPending }: ResetListDialogPro
           </View>
 
           <View className="flex-row gap-2">
-            <Button variant="tertiary" className="flex-1"
+            <Button
+              variant="tertiary"
+              className="flex-1"
               onPress={() => setIsOpen(false)}
               isDisabled={actionPending}
             >
               Abbrechen
             </Button>
-            <Button variant="secondary" className="flex-1"
+            <Button
+              variant="secondary"
+              className="flex-1"
               onPress={async () => {
                 await onConfirm()
                 setIsOpen(false)

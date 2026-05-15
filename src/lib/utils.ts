@@ -1,4 +1,4 @@
-import { db, items, parseImageUris } from "@/server/db";
+import { db, items, ListItem, parseImageUris, unitMap } from "@/server/db";
 import { Directory, File, Paths } from 'expo-file-system';
 import { getItemAsync, setItemAsync } from 'expo-secure-store';
 
@@ -70,4 +70,8 @@ export function getDisplayUri(uriOrFilename: string): string {
   return uriOrFilename.startsWith('file://') || uriOrFilename.startsWith('content://')
     ? uriOrFilename
     : resolveImageUri(uriOrFilename);
+}
+
+export function getPurchaseAmount({ quantity, unit }: Pick<ListItem, "quantity" | "unit">) {
+  return `${quantity} ${unit && unitMap[unit]}`
 }

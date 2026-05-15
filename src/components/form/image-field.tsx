@@ -4,14 +4,19 @@ import { Image } from "expo-image";
 import { launchCameraAsync, launchImageLibraryAsync, requestCameraPermissionsAsync, requestMediaLibraryPermissionsAsync } from 'expo-image-picker';
 import { Button, Label, TextField } from "heroui-native";
 import { CameraIcon, ImagesIcon, XIcon } from "lucide-react-native";
+import { useState } from "react";
 import { Alert, Pressable, View } from 'react-native';
 import { Icon } from "../icon";
+import { ImageViewerModal } from "../image/image-viewer-modal";
 import { Text } from "../text";
 
 
 export function ImageFieldComponent() {
   const field = useFieldContext<string[]>();
   const uris = field.state.value ?? [];
+  // image viewer
+  const [viewerVisible, setViewerVisible] = useState(false)
+  const [viewerIndex, setViewerIndex] = useState(0)
 
   async function pickFromGallery() {
     const { status } = await requestMediaLibraryPermissionsAsync();
@@ -44,21 +49,34 @@ export function ImageFieldComponent() {
     }
   }
 
+  const hasImageUris = uris.length > 0
   return (
     <TextField>
       <Label className="text-sm text-muted">Bilder</Label>
 
-      {uris.length > 0 ? (
+      {hasImageUris ? (
         <View className="flex-row flex-wrap gap-2 mb-2">
-          {uris.map((uriOrFilename) => (
-            <View key={uriOrFilename} className="flex-1 aspect-square max-w-[23.3%] overflow-hidden">
-              <Image
-                source={{ uri: getDisplayUri(uriOrFilename) }}
-                style={{ flex: 1, borderRadius: 8 }}
-                contentFit="cover"
-                contentPosition="center"
-                transition={200}
-              />
+          {uris.map((uriOrFilename, index) => (
+            <View
+              key={`${uriOrFilename}-${index}`}
+              //* 23.3% is the closest to 25% minus gap-2 across all images. calc with % + px is not supported
+              className="flex-1 aspect-square max-w-[23.3%] overflow-hidden"
+            >
+              <Pressable
+                onPress={() => {
+                  setViewerIndex(index)
+                  setViewerVisible(true)
+                }}
+                className="size-full"
+              >
+                <Image
+                  source={{ uri: getDisplayUri(uriOrFilename) }}
+                  style={{ flex: 1, borderRadius: 8 }}
+                  contentFit="cover"
+                  contentPosition="center"
+                  transition={200}
+                />
+              </Pressable>
               <Pressable
                 className="absolute top-0.5 right-0.5"
                 onPress={() => field.handleChange(uris.filter((u) => u !== uriOrFilename))}
@@ -68,6 +86,14 @@ export function ImageFieldComponent() {
               </Pressable>
             </View>
           ))}
+
+          {/* fullscreen image viewer */}
+          {hasImageUris && <ImageViewerModal
+            visible={viewerVisible}
+            uris={uris}
+            initialIndex={viewerIndex}
+            onClose={() => setViewerVisible(false)}
+          />}
         </View>
       ) : (
         <View className="pb-2">

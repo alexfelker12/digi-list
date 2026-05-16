@@ -4,88 +4,132 @@ import { getDisplayUri } from "@/lib/utils";
 import { ItemWithUriArray } from "@/server/db";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Image } from "expo-image";
-import { Button, Card } from "heroui-native";
-import { SquarePenIcon } from "lucide-react-native";
-import { View } from "react-native";
+import { Button, Card, Menu, PressableFeedback, Separator } from "heroui-native";
+import { EllipsisVerticalIcon, SquarePenIcon, Trash2Icon } from "lucide-react-native";
+import { useState } from "react";
+import { GestureResponderEvent, Pressable, View } from "react-native";
 import { DeleteDialog } from "../delete-dialog";
 import { Icon } from "../icon";
+import { ImageViewerModal } from "../image/image-viewer-modal";
 import { ItemFormSheet } from "./item-form-sheet";
 
 
 type ItemTestProps = {
   item: ItemWithUriArray
+  onPress?: (item: ItemWithUriArray, event: GestureResponderEvent) => void
 }
-export function ProductItem({ item }: ItemTestProps) {
-  const qc = useQueryClient()
+export function ProductItem({ item, onPress }: ItemTestProps) {
+  const [viewerVisible, setViewerVisible] = useState(false);
 
-  const { mutateAsync: updateItem } = useMutation({
+  // mutations
+  const qc = useQueryClient()
+  const invalidateItemsQuery = () => qc.invalidateQueries({ queryKey: queryKeys.items() })
+
+  const { mutateAsync: updateList } = useMutation({
     ...updateItemMutationOptions(item.id),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.items() });
-      qc.invalidateQueries({ queryKey: queryKeys.item(item.id) });
-    },
+    onSuccess: invalidateItemsQuery,
   })
+
   const { mutateAsync: deleteItem, isPending: deletePending } = useMutation({
     ...deleteItemMutationOptions(item.id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.items() }),
+    onSuccess: invalidateItemsQuery,
   })
 
   const uris = item.imageUris.length > 0 ? item.imageUris : ["react-logo"];
-
   return (
-    <Card className="flex-row gap-2">
-      <Card.Header className="flex-1 aspect-square">
+    <PressableFeedback
+      className="overflow-auto"
+      onPress={(event) => onPress?.(item, event)}
+    >
+      <Card className="flex-row gap-2">
+        <PressableFeedback.Highlight />
 
-        <Image
-          source={{ uri: getDisplayUri(uris[0]) }}
-          style={{ flex: 1, borderRadius: 8 }}
-          contentFit="cover"
-          contentPosition="center"
-          transition={200}
+        <Card.Header className="flex-1 aspect-square">
+          <Pressable
+            onPress={() => setViewerVisible(true)}
+            className="size-full"
+          >
+            <Image
+              source={{ uri: getDisplayUri(uris[0]) }}
+              style={{ flex: 1, borderRadius: 8 }}
+              contentFit="cover"
+              contentPosition="center"
+              transition={50}
 
-          {...(item.imageUris.length === 0 && {
-            width: 100,
-            height: 100
-          })}
-        />
+              {...(item.imageUris.length === 0 && {
+                width: 100,
+                height: 100
+              })}
+            />
+          </Pressable>
 
-      </Card.Header>
+          <ImageViewerModal
+            uris={uris}
+            visible={viewerVisible}
+            onClose={() => setViewerVisible(false)}
+          />
+        </Card.Header>
 
-      <Card.Body className="flex-3 gap-0">
+        <Card.Body className="flex-4 gap-0">
+          <Card.Title className="pr-20 text-lg" numberOfLines={1}>{item.name}</Card.Title>
+          {/* // TODO: more information here? */}
+        </Card.Body>
 
-        <Card.Title className="pr-20" numberOfLines={1}>{item.name}</Card.Title>
+        <Card.Footer className="absolute top-4 right-4 flex-row gap-1.5">
+          <Menu presentation="bottom-sheet">
+            <Menu.Trigger asChild>
+              <Button variant="outline" className="h-10" hitSlop={8} isIconOnly>
+                <Icon icon={EllipsisVerticalIcon} size={18} />
+              </Button>
+            </Menu.Trigger>
+            <Menu.Portal>
+              <Menu.Overlay />
+              <Menu.Content presentation="bottom-sheet" contentContainerClassName="pt-1">
+                <Menu.Label className="mb-1">Aktionen für {item.name}</Menu.Label>
 
-        <View className="flex-1 flex-col justify-end gap-2">
-          {/* <View className="flex-row gap-1">
-            <Text>{item.quantity}x</Text>
-            <Text>{unitMap[item.unit]}</Text>
-          </View> */}
+                {/* edit item */}
+                <ItemFormSheet item={item} onSubmit={async (values) => { updateList(values) }}>
+                  <Menu.Item className="items-start">
+                    <View className="mt-1">
+                      <Icon icon={SquarePenIcon} className="text-muted" size={16} />
+                    </View>
+                    <View className="flex-1">
+                      <Menu.ItemTitle>Bearbeiten</Menu.ItemTitle>
+                      <Menu.ItemDescription numberOfLines={1}>
+                        Passe Name, Bilder, etc... an
+                      </Menu.ItemDescription>
+                    </View>
+                  </Menu.Item>
+                </ItemFormSheet>
 
-          {/* <Text className="text-sm text-muted leading-tight">{item.notes}</Text> */}
-        </View>
+                <Separator className="m-2" />
 
-      </Card.Body>
+                {/* delete item */}
+                <DeleteDialog
+                  name={item.name}
+                  onConfirm={deleteItem}
+                  actionPending={deletePending}
+                >
+                  <Menu.Item className="items-start" variant="danger">
+                    <View className="mt-1">
+                      <Icon icon={Trash2Icon} className="text-danger" size={16} />
+                    </View>
+                    <View className="flex-1">
+                      <Menu.ItemTitle>Löschen</Menu.ItemTitle>
+                      <Menu.ItemDescription numberOfLines={1}>
+                        Wird aus allen Einkaufslisten entfernt!
+                      </Menu.ItemDescription>
+                    </View>
+                  </Menu.Item>
+                </DeleteDialog>
 
-      <Card.Footer className="absolute top-4 right-4 flex-row gap-1.5">
+              </Menu.Content>
+            </Menu.Portal>
+          </Menu>
+        </Card.Footer>
 
-        <ItemFormSheet item={item}
-          onSubmit={async (values) => {
-            await updateItem(values)
-          }}
-        >
-          <Button variant="outline" size="sm" isIconOnly>
-            <Icon icon={SquarePenIcon} />
-          </Button>
-        </ItemFormSheet>
-
-        <DeleteDialog
-          name={item.name}
-          actionPending={deletePending}
-          onConfirm={deleteItem}
-        />
-
-      </Card.Footer>
-    </Card>
+      </Card>
+    </PressableFeedback>
   );
 }
 

@@ -1,6 +1,5 @@
-import { EmptyListIndicator } from "@/components/empty-list-indicator";
 import { ItemForm } from "@/components/items/item-form";
-import { SelectableItem } from "@/components/items/selectable-item";
+import { ProductsListing } from "@/components/items/product-listing";
 import { ScreenLayout } from "@/components/screen-layout";
 import { useSelectItem } from "@/hooks/use-select-item";
 import { parseItem, queryKeys } from "@/lib/queries/_helper";
@@ -8,8 +7,7 @@ import { allItemsQueryOptions, createItemMutationOptions } from "@/lib/queries/i
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Tabs } from "heroui-native";
 import { useState } from "react";
-import { ActivityIndicator, FlatList, View } from "react-native";
-import { ItemSelectProvider, useItemSelect } from "./context/select-item-context";
+import { HandleSelectProvider, useHandleSelect } from "./context/handle-select-context";
 
 
 export default function AddListItemScreen() {
@@ -19,7 +17,7 @@ export default function AddListItemScreen() {
   return (
     <ScreenLayout title="Produkt hinzufügen" showBack>
 
-      <ItemSelectProvider value={{ handleSelect }}>
+      <HandleSelectProvider value={{ handleSelect }}>
         <Tabs
           value={activeTab}
           onValueChange={setActiveTab}
@@ -41,7 +39,7 @@ export default function AddListItemScreen() {
             <ListItemNewContent />
           </Tabs.Content>
         </Tabs>
-      </ItemSelectProvider>
+      </HandleSelectProvider>
 
     </ScreenLayout>
   );
@@ -50,21 +48,14 @@ export default function AddListItemScreen() {
 
 function ListItemExistingContent() {
   const { data, isPending } = useQuery(allItemsQueryOptions())
+  const { handleSelect } = useHandleSelect()
 
   return (
-    <View className="flex-1 -mx-1">
-      <FlatList
-        data={data}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }) => <SelectableItem item={item} />}
-        ListEmptyComponent={isPending ? (
-          <ActivityIndicator size="large" className="text-accent" />
-        ) : (
-          <EmptyListIndicator message="Noch keine Produkte erstellt" />
-        )}
-        contentContainerClassName="gap-2 px-1 pb-1"
-      />
-    </View>
+    <ProductsListing
+      data={data}
+      isPending={isPending}
+      onPress={(item) => handleSelect(item)}
+    />
   );
 }
 
@@ -74,7 +65,7 @@ function ListItemNewContent() {
     ...createItemMutationOptions(),
     onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.items() })
   })
-  const { handleSelect } = useItemSelect()
+  const { handleSelect } = useHandleSelect()
 
   return (
     <ItemForm

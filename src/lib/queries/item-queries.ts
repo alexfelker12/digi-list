@@ -50,7 +50,6 @@ export const updateItemMutationOptions = (id: number) => mutationOptions({
 
 export const deleteItemMutationOptions = (id: number) => mutationOptions({
   mutationFn: async () => {
-    await db.delete(items)
-      .where(eq(items.id, id))
+    await db.delete(items).where(eq(items.id, id))
   },
 })

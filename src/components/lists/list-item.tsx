@@ -1,39 +1,51 @@
 import { DeleteDialog } from "@/components/delete-dialog";
 import { queryKeys } from "@/lib/queries/_helper";
-import { updateListMutationOptions } from "@/lib/queries/list-queries";
+import { deleteListMutationOptions, updateListMutationOptions } from "@/lib/queries/list-queries";
 import { List } from "@/server/db";
 import { useMutation, useMutationState, useQueryClient } from "@tanstack/react-query";
-import { SQLiteRunResult } from "expo-sqlite";
+import { router } from "expo-router";
 import { Button, Card, Menu, PressableFeedback, Separator } from "heroui-native";
 import { EllipsisVerticalIcon, FolderPenIcon, NotebookPenIcon, Trash2Icon } from 'lucide-react-native';
-import { GestureResponderEvent, View } from "react-native";
+import { View } from "react-native";
 import { Icon } from "../icon";
 import { ListFormDialog } from "./list-form-dialog";
 
 
 type ListItemProps = {
-  list: List
-  & { itemsCount: number }
-  onPressRun: (event: GestureResponderEvent) => void
-  onPressEdit: (event: GestureResponderEvent) => void
-  onDelete: () => Promise<SQLiteRunResult | void>
+  list: List & { itemsCount: number }
 }
-export function ItemList({ list, onPressRun, onPressEdit, onDelete }: ListItemProps) {
+export function ItemList({ list }: ListItemProps) {
   const actionPending = useMutationState({
     filters: { status: 'pending' },
     select: (mutation) => mutation.state.status === "pending",
   }).at(-1) ?? false
 
+  // mutations
   const qc = useQueryClient()
-  const { mutateAsync } = useMutation({
+  const invalidateListsQuery = () => qc.invalidateQueries({ queryKey: queryKeys.lists() })
+
+  const { mutateAsync: updateList } = useMutation({
     ...updateListMutationOptions(list.id),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.lists() })
+    onSuccess: invalidateListsQuery
   })
+
+  const { mutateAsync: deleteList } = useMutation({
+    ...deleteListMutationOptions(list.id),
+    onSuccess: invalidateListsQuery
+  })
+
+  // navigation
+  const navigateToRun = () => {
+    router.push({ pathname: "/list/[id]/run", params: { id: list.id, listName: list.name } })
+  }
+  const navigateToEdit = () => {
+    router.push({ pathname: "/list/[id]/edit", params: { id: list.id, listName: list.name } })
+  }
 
   return (
     <PressableFeedback
       className="overflow-auto"
-      onPress={onPressRun}
+      onPress={() => navigateToRun()}
     >
       <Card className="flex-row justify-between items-center">
         <PressableFeedback.Highlight />
@@ -58,7 +70,7 @@ export function ItemList({ list, onPressRun, onPressEdit, onDelete }: ListItemPr
                 <Menu.Label className="mb-1">Aktionen für {list.name}</Menu.Label>
 
                 {/* edit list (for now only name) */}
-                <ListFormDialog list={list} onSubmit={async (values) => { mutateAsync(values) }}>
+                <ListFormDialog list={list} onSubmit={async (values) => { updateList(values) }}>
                   <Menu.Item className="items-start">
                     <View className="mt-1">
                       <Icon icon={FolderPenIcon} className="text-muted" size={16} />
@@ -73,7 +85,7 @@ export function ItemList({ list, onPressRun, onPressEdit, onDelete }: ListItemPr
                 </ListFormDialog>
 
                 {/* go to edit list items screen */}
-                <Menu.Item className="items-start" onPress={onPressEdit}>
+                <Menu.Item className="items-start" onPress={() => navigateToEdit()}>
                   <View className="mt-1">
                     <Icon icon={NotebookPenIcon} className="text-muted" size={16} />
                   </View>
@@ -90,7 +102,7 @@ export function ItemList({ list, onPressRun, onPressEdit, onDelete }: ListItemPr
                 {/* delete list */}
                 <DeleteDialog
                   name={list.name}
-                  onConfirm={onDelete}
+                  onConfirm={deleteList}
                   actionPending={actionPending}
                 >
                   <Menu.Item className="items-start" variant="danger">

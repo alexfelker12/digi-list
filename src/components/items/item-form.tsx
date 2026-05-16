@@ -1,5 +1,6 @@
 import { useAppForm } from "@/lib/form";
 import { itemInsertSchema, type ItemFormValues } from '@/server/db/schema';
+import { SQLiteRunResult } from "expo-sqlite";
 import { Separator } from "heroui-native/separator";
 import { ScrollView, View } from 'react-native';
 
@@ -11,7 +12,7 @@ const defaultValues: ItemFormValues = {
 
 export interface ItemFormProps {
   item?: ItemFormValues
-  onSubmit: (values: ItemFormValues) => Promise<void>
+  onSubmit: (values: ItemFormValues) => Promise<SQLiteRunResult | void>
 }
 export function ItemForm({ item, onSubmit }: ItemFormProps) {
   const form = useAppForm({

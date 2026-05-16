@@ -5,7 +5,7 @@ import { List } from "@/server/db";
 import { useMutation, useMutationState, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { Button, Card, Menu, PressableFeedback, Separator } from "heroui-native";
-import { EllipsisVerticalIcon, FolderPenIcon, NotebookPenIcon, Trash2Icon } from 'lucide-react-native';
+import { EllipsisVerticalIcon, NotebookPenIcon, PencilIcon, Trash2Icon } from 'lucide-react-native';
 import { View } from "react-native";
 import { Icon } from "../icon";
 import { ListFormDialog } from "./list-form-dialog";
@@ -73,7 +73,7 @@ export function ItemList({ list }: ListItemProps) {
                 <ListFormDialog list={list} onSubmit={async (values) => { updateList(values) }}>
                   <Menu.Item className="items-start">
                     <View className="mt-1">
-                      <Icon icon={FolderPenIcon} className="text-muted" size={16} />
+                      <Icon icon={PencilIcon} className="text-muted" size={16} />
                     </View>
                     <View className="flex-1">
                       <Menu.ItemTitle>Name bearbeiten</Menu.ItemTitle>

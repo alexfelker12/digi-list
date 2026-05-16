@@ -1,8 +1,10 @@
+import { ItemFormSheet } from "@/components/items/item-form-sheet";
 import { ProductsListing } from "@/components/items/product-listing";
 import { ScreenLayout } from "@/components/screen-layout";
 import { Text } from "@/components/text";
-import { allItemsQueryOptions } from "@/lib/queries/item-queries";
-import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/queries/_helper";
+import { allItemsQueryOptions, createItemMutationOptions } from "@/lib/queries/item-queries";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Separator } from "heroui-native";
 import { View } from "react-native";
 
@@ -10,11 +12,11 @@ import { View } from "react-native";
 export default function ProductsListScreen() {
   const { data, isPending } = useQuery(allItemsQueryOptions())
 
-  // const qc = useQueryClient()
-  // const { mutateAsync: createList } = useMutation({
-  //   ...createListMutationOptions(),
-  //   onSuccess: qc.invalidateQueries({ queryKey: queryKeys.items() })
-  // })
+  const qc = useQueryClient()
+  const { mutateAsync: createItem } = useMutation({
+    ...createItemMutationOptions(),
+    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.items() })
+  })
 
   return (
     <ScreenLayout title="Produkte">
@@ -24,25 +26,18 @@ export default function ProductsListScreen() {
             {data ? (data.length || "Keine") : 0} {data?.length === 1 ? "Produkt" : "Produkte"}
           </Text>
 
-          {/* <ListFormDialog
+          <ItemFormSheet
             onSubmit={async (values) => {
-              await createList(values, {
-                // navigate to list details
-                onSuccess: (data) => {
-                  navigateToEdit(data.id, data.name)
-                },
-              })
+              await createItem(values)
             }}
-          /> */}
+          />
         </View>
 
         <Separator />
 
-        {/* // TODO: refactor bottom tabs for easier display of lists in tab screens */}
         <ProductsListing
           data={data}
           isPending={isPending}
-          className="pb-20"
         />
       </View>
     </ScreenLayout>

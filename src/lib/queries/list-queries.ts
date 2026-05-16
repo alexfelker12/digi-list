@@ -13,7 +13,7 @@ export const allListsQueryOptions = () => queryOptions({
       id: lists.id,
       createdAt: lists.createdAt,
       name: lists.name,
-      itemsCount: count(listItems.id)
+      itemsCount: count(eq(lists.id, listItems.listId))
     })
       .from(lists)
       .leftJoin(listItems, eq(lists.id, listItems.listId))

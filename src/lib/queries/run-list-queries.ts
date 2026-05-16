@@ -11,16 +11,9 @@ import { queryKeys } from "./_helper";
 export const checkedListItemsCountQueryOptions = (listId: number) => queryOptions({
   queryKey: queryKeys.checkedCount(listId),
   queryFn: async () => {
-    // const checkedListItemsCount = await db.$count(
-    //   listItems,
-    //   and(
-    //     eq(listItems.listId, listId),
-    //     eq(listItems.checked, true)
-    //   )
-    // )
     const [checkedListItemsCount] = await db
       .select({
-        total: count(),
+        total: count(eq(listItems.listId, listId)),
         // count rows where checked is '1' (sqlite boolean '0' / '1')
         checked: count(sql`CASE WHEN ${listItems.checked} = 1 THEN 1 END`),
       })

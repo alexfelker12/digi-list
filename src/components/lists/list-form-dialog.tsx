@@ -16,7 +16,7 @@ export function ListFormDialog({ list, onSubmit, children }: ListFormProps & {
     <Dialog isOpen={isOpen} onOpenChange={setIsOpen}>
       <Dialog.Trigger asChild>
         {children || (
-          <Button variant="secondary">
+          <Button variant="secondary" className="h-10">
             <Icon icon={CirclePlusIcon} />
             <Button.Label>Erstellen</Button.Label>
           </Button>

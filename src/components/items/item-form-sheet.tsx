@@ -1,8 +1,10 @@
 import { Text } from '@/components/text';
 import { Button } from "heroui-native";
 import { BottomSheet } from 'heroui-native/bottom-sheet';
+import { CirclePlusIcon } from "lucide-react-native";
 import { useState } from 'react';
 import { BottomSheetBlurOverlay } from "../dialog/bottom-sheet-blur-overlay";
+import { Icon } from "../icon";
 import { ItemForm, ItemFormProps } from "./item-form";
 
 
@@ -16,8 +18,9 @@ export function ItemFormSheet({ item, onSubmit, children }: ItemFormProps & {
     <BottomSheet isOpen={sheetOpen} onOpenChange={setSheetOpen}>
       <BottomSheet.Trigger asChild>
         {children || (
-          <Button variant="outline">
-            <Button.Label>Neues Item</Button.Label>
+          <Button variant="secondary" className="h-10">
+            <Icon icon={CirclePlusIcon} />
+            <Button.Label>Erstellen</Button.Label>
           </Button>
         )}
       </BottomSheet.Trigger>

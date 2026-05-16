@@ -10,6 +10,7 @@ import { useState } from "react";
 import { GestureResponderEvent, Pressable, View } from "react-native";
 import { DeleteDialog } from "../delete-dialog";
 import { Icon } from "../icon";
+import { ImagePlaceholder } from "../image/image-placeholder";
 import { ImageViewerModal } from "../image/image-viewer-modal";
 import { ItemFormSheet } from "./item-form-sheet";
 
@@ -19,6 +20,7 @@ type ItemTestProps = {
   onPress?: (item: ItemWithUriArray, event: GestureResponderEvent) => void
 }
 export function ProductItem({ item, onPress }: ItemTestProps) {
+  const { id, imageUris, name } = item
   const [viewerVisible, setViewerVisible] = useState(false);
 
   // mutations
@@ -26,56 +28,56 @@ export function ProductItem({ item, onPress }: ItemTestProps) {
   const invalidateItemsQuery = () => qc.invalidateQueries({ queryKey: queryKeys.items() })
 
   const { mutateAsync: updateList } = useMutation({
-    ...updateItemMutationOptions(item.id),
+    ...updateItemMutationOptions(id),
     onSuccess: invalidateItemsQuery,
   })
 
   const { mutateAsync: deleteItem, isPending: deletePending } = useMutation({
-    ...deleteItemMutationOptions(item.id),
+    ...deleteItemMutationOptions(id),
     onSuccess: invalidateItemsQuery,
   })
 
-  const uris = item.imageUris.length > 0 ? item.imageUris : ["react-logo"];
+  const hasImageUris = imageUris.length > 0
   return (
     <PressableFeedback
       className="overflow-auto"
       onPress={(event) => onPress?.(item, event)}
     >
-      <Card className="flex-row gap-2">
+      <Card className="flex-row gap-3">
         <PressableFeedback.Highlight />
 
-        <Card.Header className="flex-1 aspect-square">
-          <Pressable
-            onPress={() => setViewerVisible(true)}
-            className="size-full"
-          >
-            <Image
-              source={{ uri: getDisplayUri(uris[0]) }}
-              style={{ flex: 1, borderRadius: 8 }}
-              contentFit="cover"
-              contentPosition="center"
-              transition={50}
+        <Card.Header className="h-10 aspect-square">
+          {hasImageUris ? (
+            <Pressable
+              onPress={() => setViewerVisible(true)}
+              className="size-full"
+            >
+              <Image
+                source={{ uri: getDisplayUri(imageUris[0]) }}
+                style={{ flex: 1, borderRadius: 8 }}
+                contentFit="cover"
+                contentPosition="center"
+                transition={50}
+              />
+            </Pressable>
+          ) : (
+            <ImagePlaceholder />
+          )}
 
-              {...(item.imageUris.length === 0 && {
-                width: 100,
-                height: 100
-              })}
-            />
-          </Pressable>
-
-          <ImageViewerModal
-            uris={uris}
+          {/* fullscreen image viewer */}
+          {hasImageUris && <ImageViewerModal
+            uris={imageUris}
             visible={viewerVisible}
             onClose={() => setViewerVisible(false)}
-          />
+          />}
         </Card.Header>
 
-        <Card.Body className="flex-4 gap-0">
-          <Card.Title className="pr-20 text-lg" numberOfLines={1}>{item.name}</Card.Title>
+        <Card.Body className="flex-1 gap-0">
+          <Card.Title className="text-lg leading-[1.2]" numberOfLines={1}>{name}</Card.Title>
           {/* // TODO: more information here? */}
         </Card.Body>
 
-        <Card.Footer className="absolute top-4 right-4 flex-row gap-1.5">
+        <Card.Footer className="">
           <Menu presentation="bottom-sheet">
             <Menu.Trigger asChild>
               <Button variant="outline" className="h-10" hitSlop={8} isIconOnly>
@@ -85,7 +87,7 @@ export function ProductItem({ item, onPress }: ItemTestProps) {
             <Menu.Portal>
               <Menu.Overlay />
               <Menu.Content presentation="bottom-sheet" contentContainerClassName="pt-1">
-                <Menu.Label className="mb-1">Aktionen für {item.name}</Menu.Label>
+                <Menu.Label className="mb-1">Aktionen für {name}</Menu.Label>
 
                 {/* edit item */}
                 <ItemFormSheet item={item} onSubmit={async (values) => { updateList(values) }}>
@@ -106,7 +108,7 @@ export function ProductItem({ item, onPress }: ItemTestProps) {
 
                 {/* delete item */}
                 <DeleteDialog
-                  name={item.name}
+                  name={name}
                   onConfirm={deleteItem}
                   actionPending={deletePending}
                 >

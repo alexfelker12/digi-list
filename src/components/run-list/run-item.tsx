@@ -122,11 +122,11 @@ function RunItemContext() {
             {notes && <>
               <Separator />
               <Text className="text-foreground/75 text-base">{notes}</Text>
-              <Separator />
             </>}
 
             {/* images with horizontal scroll, use image viewer modal on press */}
-            {hasImageUris && (
+            {hasImageUris && <>
+              <Separator />
               <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
@@ -150,7 +150,7 @@ function RunItemContext() {
                   </Pressable>
                 ))}
               </ScrollView>
-            )}
+            </>}
 
           </BottomSheet.Content>
         </BottomSheet.Portal>

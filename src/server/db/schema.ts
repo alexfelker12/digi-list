@@ -10,6 +10,7 @@ export const lists = sqliteTable('list', {
   createdAt: integer('created_at', { mode: 'timestamp' })
     .notNull()
     .$defaultFn(() => new Date()),
+  completedOnce: integer('completed_once', { mode: 'boolean' }).notNull().default(false),
 });
 
 export const items = sqliteTable('item', {

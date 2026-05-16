@@ -24,7 +24,7 @@ export default function RunListScreen() {
   const itemsCount = data?.length ?? 0
 
   return (
-    <ScreenLayout title={listName ?? "Einkaufsliste"} showBack className="pb-0">
+    <ScreenLayout title={listName ?? "Einkaufsliste"} showBack>
       <ListItemsProvider value={{ listId, listName, itemsCount }}>
         <View className="flex-row items-center justify-between gap-4">
           <CheckedCount />
@@ -51,7 +51,7 @@ export default function RunListScreen() {
             ) : (
               <EmptyListIndicator message={`${listName} hat noch keine Produkte`} />
             )}
-            contentContainerClassName="gap-2 px-1 pb-20"
+            contentContainerClassName="gap-2 px-1 pb-2"
           />
         </View>
       </ListItemsProvider>

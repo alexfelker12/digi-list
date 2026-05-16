@@ -6,7 +6,7 @@ import { CircleCheckBigIcon, CircleIcon } from "lucide-react-native";
 import { ActivityIndicator, View } from "react-native";
 import Animated, { Easing, interpolate, interpolateColor, useAnimatedStyle, useDerivedValue, withTiming } from 'react-native-reanimated';
 import { Icon } from "../icon";
-import { ListCompleteDialog } from "./list-complete-dialog";
+// import { ListCompleteDialog } from "./list-complete-dialog";
 import { RunProgress } from "./run-progress";
 
 
@@ -95,7 +95,8 @@ function CheckedCountInner({ checkedCount }: CheckedCountInnerProps) {
         </Chip>
       </Animated.View>
 
-      <ListCompleteDialog isCompleted={isListCompleted} />
+      {/* // TODO: implement sometime, maybe with different render/business logic strategy */}
+      {/* <ListCompleteDialog isCompleted={isListCompleted} /> */}
     </>
   );
 }

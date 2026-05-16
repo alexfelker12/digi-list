@@ -1,5 +1,5 @@
 import { db } from '@/server/db';
-import { ListItemInsert, listItems } from '@/server/db/schema';
+import { ListItemInsert, listItems, lists } from '@/server/db/schema';
 import { mutationOptions, queryOptions } from '@tanstack/react-query';
 import { count, eq, sql } from 'drizzle-orm';
 import { queryKeys } from "./_helper";
@@ -37,10 +37,24 @@ export const toggleCheckedListItemMutationOptions = (id: number) => mutationOpti
   },
 })
 
+export const markListAsCompletedMutationOptions = (id: number) => mutationOptions({
+  mutationFn: async () => {
+    await db.update(lists)
+      .set({ completedOnce: true })
+      .where(eq(lists.id, id))
+  },
+})
+
 export const resetListMutationOptions = (id: number) => mutationOptions({
   mutationFn: async () => {
-    await db.update(listItems)
-      .set({ checked: false })
-      .where(eq(listItems.listId, id))
+    await db.transaction(async (tx) => {
+      await tx.update(lists)
+        .set({ completedOnce: false })
+        .where(eq(lists.id, id))
+
+      await tx.update(listItems)
+        .set({ checked: false })
+        .where(eq(listItems.listId, id))
+    })
   },
 })

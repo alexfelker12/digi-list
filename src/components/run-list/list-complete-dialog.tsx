@@ -13,7 +13,7 @@ export function ListCompleteDialog({ isCompleted }: ListCompleteDialogProps) {
 
   useEffect(() => {
     if (!isCompleted) return;
-    setTimeout(() => setIsOpen(true), 200)
+    setTimeout(() => setIsOpen(true), 250)
   }, [isCompleted])
 
   return (

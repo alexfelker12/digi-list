@@ -1,0 +1,1 @@
+ALTER TABLE `list` ADD `completed_once` integer DEFAULT false NOT NULL;

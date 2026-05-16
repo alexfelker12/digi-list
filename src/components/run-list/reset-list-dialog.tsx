@@ -1,6 +1,6 @@
 import { useListItems } from "@/screens/context/list-items-context";
 import { SQLiteRunResult } from "expo-sqlite";
-import { Button, Dialog } from "heroui-native";
+import { Button, cn, Dialog } from "heroui-native";
 import { RotateCcwIcon } from "lucide-react-native";
 import { useState } from "react";
 import { Keyboard, View } from "react-native";
@@ -22,7 +22,16 @@ export function ResetListDialog({ onConfirm, actionPending }: ResetListDialogPro
     }}>
 
       <Dialog.Trigger asChild>
-        <Button variant="tertiary" size="sm" isDisabled={itemsCount === 0} isIconOnly>
+        <Button
+          variant="tertiary"
+          size="sm"
+          isIconOnly
+          isDisabled={itemsCount === 0}
+          className={cn(
+            // manually adding disabled styles since isDisabled does not seem to work
+            itemsCount === 0 && "opacity-50 pointer-events-none"
+          )}
+        >
           <Icon icon={RotateCcwIcon} />
         </Button>
       </Dialog.Trigger>
@@ -42,8 +51,8 @@ export function ResetListDialog({ onConfirm, actionPending }: ResetListDialogPro
           <Dialog.Close variant="ghost" className="absolute top-1.5 right-1.5" />
 
           <View className="gap-1">
-            <Dialog.Title className="leading-none">{listName} zurücksetzen?</Dialog.Title>
-            <Dialog.Description className="leading-snug">Alle Items werden auf nicht abgehackt gestellt!</Dialog.Description>
+            <Dialog.Title className="leading-[1.2]">{listName} zurücksetzen?</Dialog.Title>
+            <Dialog.Description className="leading-snug">Dein Listenfortschritt geht dabei verloren!</Dialog.Description>
           </View>
 
           <View className="flex-row gap-2">

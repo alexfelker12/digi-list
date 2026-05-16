@@ -163,7 +163,7 @@ export function ListItemsForm({ listId, list, onSubmit }: ListItemFormProps) {
 
                   <View className="gap-1">
                     <Dialog.Title
-                      className="leading-none pr-6 text-accent"
+                      className="leading-[1.2] pr-6 text-accent"
                       numberOfLines={1}
                     >
                       {editingItem !== null && editingItem.item && `${editingItem.item.name}`}

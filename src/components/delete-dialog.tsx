@@ -56,7 +56,7 @@ export function DeleteDialog({
           <Dialog.Close variant="ghost" className="absolute top-1.5 right-1.5" />
 
           <View className="gap-1">
-            <Dialog.Title className="leading-none">{name} löschen?</Dialog.Title>
+            <Dialog.Title className="leading-[1.2]">{name} löschen?</Dialog.Title>
             <Dialog.Description className="leading-snug">Kann nicht rückgängig gemacht werden!</Dialog.Description>
           </View>
 

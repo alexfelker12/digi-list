@@ -115,7 +115,7 @@ function RunItemContext() {
 
             {/* name, amount and notes */}
             <View className="gap-1">
-              <BottomSheet.Title className="leading-none text-accent">{name}</BottomSheet.Title>
+              <BottomSheet.Title className="leading-[1.2] text-accent">{name}</BottomSheet.Title>
               <BottomSheet.Description className="leading-snug">{purchaseAmount}</BottomSheet.Description>
             </View>
 

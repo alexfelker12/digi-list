@@ -1,4 +1,4 @@
-import { CustomTabsLayout } from "@/components/layout/custom-tabs";
+import { CustomTabsLayout } from "@/components/layout/v2/custom-tabs";
 
 
 export default function TabLayout() {

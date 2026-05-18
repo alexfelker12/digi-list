@@ -14,7 +14,7 @@ export default function ProductsListScreen() {
   const { mutateAsync: createItem } = useMutation(createItemMutationOptions())
 
   return (
-    <ScreenLayout title="Produkte">
+    <ScreenLayout title="Produkte" className="pb-0">
       <View className="flex-1 gap-4">
         <View className="flex-row items-center justify-between">
           <Text className="text-muted italic">
@@ -33,6 +33,7 @@ export default function ProductsListScreen() {
         <ProductsListing
           data={data}
           isPending={isPending}
+          className="pb-4"
         />
       </View>
     </ScreenLayout>

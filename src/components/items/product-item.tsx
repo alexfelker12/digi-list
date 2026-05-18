@@ -20,7 +20,7 @@ type ItemTestProps = {
 }
 export function ProductItem({ item, onPress }: ItemTestProps) {
   const { id, imageUris, name } = item
-  const [viewerVisible, setViewerVisible] = useState(false);
+  const [viewerVisible, setViewerVisible] = useState(false)
 
   // mutations
   const { mutateAsync: updateList } = useMutation(updateItemMutationOptions(id))
@@ -54,7 +54,7 @@ export function ProductItem({ item, onPress }: ItemTestProps) {
           )}
 
           {/* fullscreen image viewer */}
-          {hasImageUris && <ImageViewerModal
+          {hasImageUris && viewerVisible && <ImageViewerModal
             uris={imageUris}
             visible={viewerVisible}
             onClose={() => setViewerVisible(false)}

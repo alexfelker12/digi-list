@@ -7,69 +7,54 @@ import { allItemsQueryOptions, createItemMutationOptions } from "@/lib/queries/i
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Tabs } from "heroui-native";
 import { useState } from "react";
-import { HandleSelectProvider, useHandleSelect } from "./context/handle-select-context";
 
 
 export default function AddListItemScreen() {
   const [activeTab, setActiveTab] = useState("existing")
+
   const handleSelect = useSelectItem()
+  const { data, isPending } = useQuery(allItemsQueryOptions())
+  const { mutateAsync } = useMutation({
+    ...createItemMutationOptions(),
+    onSuccess: (newItem) => handleSelect(parseItem(newItem))
+  })
 
   return (
     <ScreenLayout title="Produkt hinzufügen" showBack>
 
-      <HandleSelectProvider value={{ handleSelect }}>
-        <Tabs
-          value={activeTab}
-          onValueChange={setActiveTab}
-          className="flex-1 pb-2"
-        >
-          <Tabs.List>
-            <Tabs.Indicator />
-            <Tabs.Trigger value="existing" className="flex-1">
-              <Tabs.Label>Alle Produkte</Tabs.Label>
-            </Tabs.Trigger>
-            <Tabs.Trigger value="new" className="flex-1">
-              <Tabs.Label>Neues Produkt</Tabs.Label>
-            </Tabs.Trigger>
-          </Tabs.List>
-          <Tabs.Content value="existing" className="flex-1">
-            <ListItemExistingContent />
-          </Tabs.Content>
-          <Tabs.Content value="new" className="flex-1">
-            <ListItemNewContent />
-          </Tabs.Content>
-        </Tabs>
-      </HandleSelectProvider>
+      <Tabs
+        value={activeTab}
+        onValueChange={setActiveTab}
+        className="flex-1 pb-2"
+      >
+        <Tabs.List>
+          <Tabs.Indicator />
+          <Tabs.Trigger value="existing" className="flex-1">
+            <Tabs.Label>Alle Produkte</Tabs.Label>
+          </Tabs.Trigger>
+          <Tabs.Trigger value="new" className="flex-1">
+            <Tabs.Label>Neues Produkt</Tabs.Label>
+          </Tabs.Trigger>
+        </Tabs.List>
+
+        <Tabs.Content value="existing" className="flex-1">
+          <ProductsListing
+            data={data}
+            isPending={isPending}
+            onPress={(item) => handleSelect(item)}
+          />
+        </Tabs.Content>
+
+        <Tabs.Content value="new" className="flex-1">
+          <ItemForm
+            onSubmit={async (values) => {
+              await mutateAsync(values)
+            }}
+          />
+        </Tabs.Content>
+
+      </Tabs>
 
     </ScreenLayout>
-  );
-}
-
-
-function ListItemExistingContent() {
-  const { data, isPending } = useQuery(allItemsQueryOptions())
-  const { handleSelect } = useHandleSelect()
-
-  return (
-    <ProductsListing
-      data={data}
-      isPending={isPending}
-      onPress={(item) => handleSelect(item)}
-    />
-  );
-}
-
-function ListItemNewContent() {
-  const { mutateAsync } = useMutation(createItemMutationOptions())
-  const { handleSelect } = useHandleSelect()
-
-  return (
-    <ItemForm
-      onSubmit={async (values) => {
-        await mutateAsync(values, {
-          onSuccess: (newItem) => handleSelect(parseItem(newItem))
-        })
-      }}
-    />
   );
 }

@@ -7,13 +7,12 @@ import { ProductItem } from "./product-item";
 
 
 type ProductsListingProps = {
-  className?: string
-  onPress?: (item: ItemWithUriArray, event: GestureResponderEvent) => void
   data: ParsedItem[] | undefined
   isPending?: boolean
+  className?: string
+  onPress?: (item: ItemWithUriArray, event: GestureResponderEvent) => void
 }
 export function ProductsListing({ data, isPending, className, onPress }: ProductsListingProps) {
-
   return (
     <View className="flex-1 -mx-1">
       <FlatList

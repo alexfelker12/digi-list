@@ -36,6 +36,9 @@ export const createItemMutationOptions = () => mutationOptions({
       .returning()
     return created
   },
+  onSuccess: (_data, _variables, _onMutateResult, context) => {
+    context.client.invalidateQueries({ queryKey: queryKeys.items() })
+  },
 })
 
 export const updateItemMutationOptions = (id: number) => mutationOptions({
@@ -46,10 +49,16 @@ export const updateItemMutationOptions = (id: number) => mutationOptions({
       .returning()
     return updated
   },
+  onSuccess: (_data, _variables, _onMutateResult, context) => {
+    context.client.invalidateQueries({ queryKey: queryKeys.items() })
+  },
 })
 
 export const deleteItemMutationOptions = (id: number) => mutationOptions({
   mutationFn: async () => {
     await db.delete(items).where(eq(items.id, id))
+  },
+  onSuccess: (_data, _variables, _onMutateResult, context) => {
+    context.client.invalidateQueries({ queryKey: queryKeys.items() })
   },
 })

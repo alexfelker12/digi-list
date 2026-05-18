@@ -50,9 +50,6 @@ export const toggleCheckedListItemMutationOptions = (id: number, listId: number)
   onError: (_err, _variables, onMutateResult, context) => {
     context.client.setQueryData(queryKeys.listItems(listId), () => onMutateResult?.previous)
   },
-  // onSuccess: (_data, _variables, _onMutateResult, context) => {
-  //   context.client.invalidateQueries({ queryKey: queryKeys.listItems(listId) })
-  // },
 })
 
 export const markListAsCompletedMutationOptions = (id: number) => mutationOptions({
@@ -74,5 +71,9 @@ export const resetListMutationOptions = (id: number) => mutationOptions({
         .set({ checked: false })
         .where(eq(listItems.listId, id))
     })
+  },
+  onSuccess: (_data, _variables, _onMutateResult, context) => {
+    context.client.invalidateQueries({ queryKey: queryKeys.checkedCount(id) })
+    context.client.invalidateQueries({ queryKey: queryKeys.listItems(id) })
   },
 })

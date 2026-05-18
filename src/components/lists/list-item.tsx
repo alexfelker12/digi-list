@@ -1,8 +1,7 @@
 import { DeleteDialog } from "@/components/delete-dialog";
-import { queryKeys } from "@/lib/queries/_helper";
 import { deleteListMutationOptions, updateListMutationOptions } from "@/lib/queries/list-queries";
 import { List } from "@/server/db";
-import { useMutation, useMutationState, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useMutationState } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { Button, Card, Menu, PressableFeedback, Separator } from "heroui-native";
 import { EllipsisVerticalIcon, NotebookPenIcon, PencilIcon, Trash2Icon } from 'lucide-react-native';
@@ -21,18 +20,8 @@ export function ItemList({ list }: ListItemProps) {
   }).at(-1) ?? false
 
   // mutations
-  const qc = useQueryClient()
-  const invalidateListsQuery = () => qc.invalidateQueries({ queryKey: queryKeys.lists() })
-
-  const { mutateAsync: updateList } = useMutation({
-    ...updateListMutationOptions(list.id),
-    onSuccess: invalidateListsQuery
-  })
-
-  const { mutateAsync: deleteList } = useMutation({
-    ...deleteListMutationOptions(list.id),
-    onSuccess: invalidateListsQuery
-  })
+  const { mutateAsync: updateList } = useMutation(updateListMutationOptions(list.id))
+  const { mutateAsync: deleteList } = useMutation(deleteListMutationOptions(list.id))
 
   // navigation
   const navigateToRun = () => {

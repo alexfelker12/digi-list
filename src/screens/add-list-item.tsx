@@ -2,9 +2,9 @@ import { ItemForm } from "@/components/items/item-form";
 import { ProductsListing } from "@/components/items/product-listing";
 import { ScreenLayout } from "@/components/screen-layout";
 import { useSelectItem } from "@/hooks/use-select-item";
-import { parseItem, queryKeys } from "@/lib/queries/_helper";
+import { parseItem } from "@/lib/queries/_helper";
 import { allItemsQueryOptions, createItemMutationOptions } from "@/lib/queries/item-queries";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Tabs } from "heroui-native";
 import { useState } from "react";
 import { HandleSelectProvider, useHandleSelect } from "./context/handle-select-context";
@@ -60,11 +60,7 @@ function ListItemExistingContent() {
 }
 
 function ListItemNewContent() {
-  const qc = useQueryClient()
-  const { mutateAsync } = useMutation({
-    ...createItemMutationOptions(),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.items() })
-  })
+  const { mutateAsync } = useMutation(createItemMutationOptions())
   const { handleSelect } = useHandleSelect()
 
   return (

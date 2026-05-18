@@ -2,9 +2,8 @@ import { ItemFormSheet } from "@/components/items/item-form-sheet";
 import { ProductsListing } from "@/components/items/product-listing";
 import { ScreenLayout } from "@/components/screen-layout";
 import { Text } from "@/components/text";
-import { queryKeys } from "@/lib/queries/_helper";
 import { allItemsQueryOptions, createItemMutationOptions } from "@/lib/queries/item-queries";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Separator } from "heroui-native";
 import { View } from "react-native";
 
@@ -12,11 +11,7 @@ import { View } from "react-native";
 export default function ProductsListScreen() {
   const { data, isPending } = useQuery(allItemsQueryOptions())
 
-  const qc = useQueryClient()
-  const { mutateAsync: createItem } = useMutation({
-    ...createItemMutationOptions(),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.items() })
-  })
+  const { mutateAsync: createItem } = useMutation(createItemMutationOptions())
 
   return (
     <ScreenLayout title="Produkte">

@@ -1,8 +1,7 @@
-import { queryKeys } from "@/lib/queries/_helper";
 import { deleteItemMutationOptions, updateItemMutationOptions } from "@/lib/queries/item-queries";
 import { getDisplayUri } from "@/lib/utils";
 import { ItemWithUriArray } from "@/server/db";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import { Button, Card, Menu, PressableFeedback, Separator } from "heroui-native";
 import { EllipsisVerticalIcon, SquarePenIcon, Trash2Icon } from "lucide-react-native";
@@ -24,18 +23,8 @@ export function ProductItem({ item, onPress }: ItemTestProps) {
   const [viewerVisible, setViewerVisible] = useState(false);
 
   // mutations
-  const qc = useQueryClient()
-  const invalidateItemsQuery = () => qc.invalidateQueries({ queryKey: queryKeys.items() })
-
-  const { mutateAsync: updateList } = useMutation({
-    ...updateItemMutationOptions(id),
-    onSuccess: invalidateItemsQuery,
-  })
-
-  const { mutateAsync: deleteItem, isPending: deletePending } = useMutation({
-    ...deleteItemMutationOptions(id),
-    onSuccess: invalidateItemsQuery,
-  })
+  const { mutateAsync: updateList } = useMutation(updateItemMutationOptions(id))
+  const { mutateAsync: deleteItem, isPending: deletePending } = useMutation(deleteItemMutationOptions(id))
 
   const hasImageUris = imageUris.length > 0
   return (

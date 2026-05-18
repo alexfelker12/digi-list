@@ -13,6 +13,7 @@ export const allListsQueryOptions = () => queryOptions({
       id: lists.id,
       createdAt: lists.createdAt,
       name: lists.name,
+      completedOnce: lists.completedOnce,
       itemsCount: count(eq(lists.id, listItems.listId))
     })
       .from(lists)
@@ -30,7 +31,10 @@ export const createListMutationOptions = () => mutationOptions({
       .values({ name })
       .returning()
     return created
-  }
+  },
+  onSuccess: (_data, _variables, _onMutateResult, context) => {
+    context.client.invalidateQueries({ queryKey: queryKeys.lists() })
+  },
 })
 
 export const updateListMutationOptions = (id: number) => mutationOptions({
@@ -41,10 +45,16 @@ export const updateListMutationOptions = (id: number) => mutationOptions({
       .returning()
     return updated
   },
+  onSuccess: (_data, _variables, _onMutateResult, context) => {
+    context.client.invalidateQueries({ queryKey: queryKeys.lists() })
+  },
 })
 
 export const deleteListMutationOptions = (id: number) => mutationOptions({
   mutationFn: async () => {
     await db.delete(lists).where(eq(lists.id, id))
-  }
+  },
+  onSuccess: (_data, _variables, _onMutateResult, context) => {
+    context.client.invalidateQueries({ queryKey: queryKeys.lists() })
+  },
 })

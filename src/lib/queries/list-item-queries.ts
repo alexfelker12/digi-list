@@ -56,4 +56,7 @@ export const updateListItemsMutationOptions = (listId: number) => mutationOption
         .returning()
     })
   },
+  onSuccess: (_data, _variables, _onMutateResult, context) => {
+    context.client.invalidateQueries({ queryKey: queryKeys.listItems(listId) })
+  },
 })

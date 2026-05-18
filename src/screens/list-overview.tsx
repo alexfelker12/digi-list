@@ -3,9 +3,8 @@ import { ListFormDialog } from "@/components/lists/list-form-dialog";
 import { ItemList } from "@/components/lists/list-item";
 import { ScreenLayout } from "@/components/screen-layout";
 import { Text } from "@/components/text";
-import { queryKeys } from "@/lib/queries/_helper";
 import { allListsQueryOptions, createListMutationOptions } from "@/lib/queries/list-queries";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { Separator } from "heroui-native";
 import { ActivityIndicator, FlatList, View } from "react-native";
@@ -21,12 +20,7 @@ export default function ListOverviewScreen() {
 
 function ListsListing() {
   const { data, isPending } = useQuery(allListsQueryOptions())
-
-  const qc = useQueryClient()
-  const { mutateAsync: createList } = useMutation({
-    ...createListMutationOptions(),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.lists() })
-  })
+  const { mutateAsync: createList } = useMutation(createListMutationOptions())
 
   return (
     <View className="flex-1 gap-4">

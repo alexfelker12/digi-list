@@ -1,8 +1,7 @@
 import { ListItemsForm } from "@/components/list-items/list-items-form";
 import { ScreenLayout } from "@/components/screen-layout";
-import { queryKeys } from "@/lib/queries/_helper";
 import { listItemsQueryOptions, updateListItemsMutationOptions } from "@/lib/queries/list-item-queries";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
 import { ActivityIndicator } from "react-native";
 
@@ -16,11 +15,7 @@ export default function ListDetailScreen() {
 
   const { data, isPending } = useQuery(listItemsQueryOptions(listId))
 
-  const qc = useQueryClient();
-  const { mutateAsync } = useMutation({
-    ...updateListItemsMutationOptions(listId),
-    onSuccess: () => qc.invalidateQueries({ queryKey: queryKeys.listItems(listId) })
-  })
+  const { mutateAsync } = useMutation(updateListItemsMutationOptions(listId))
 
   return (
     <ScreenLayout title={listName ?? "Details"} showBack className="pb-0">

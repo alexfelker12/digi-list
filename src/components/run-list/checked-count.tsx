@@ -1,9 +1,7 @@
-import { checkedListItemsCountQueryOptions } from "@/lib/queries/run-list-queries";
 import { useListItems } from "@/screens/context/list-items-context";
-import { useQuery } from "@tanstack/react-query";
-import { Chip, useThemeColor } from "heroui-native";
+import { Chip, Skeleton, useThemeColor } from "heroui-native";
 import { CircleCheckBigIcon, CircleIcon } from "lucide-react-native";
-import { ActivityIndicator, View } from "react-native";
+import { View } from "react-native";
 import Animated, { Easing, interpolate, interpolateColor, useAnimatedStyle, useDerivedValue, withTiming } from 'react-native-reanimated';
 import { Icon } from "../icon";
 // import { ListCompleteDialog } from "./list-complete-dialog";
@@ -11,22 +9,17 @@ import { RunProgress } from "./run-progress";
 
 
 export function CheckedCount() {
-  const { listId } = useListItems()
-  const { data: checkedCount, isPending } = useQuery(checkedListItemsCountQueryOptions(listId))
+  const { checkedItemsCount, totalItemsCount, isPending } = useListItems()
 
-  if (isPending || !checkedCount) return <ActivityIndicator size={12} />
-  if (checkedCount.checked + checkedCount.total === 0) return <RunListEmpty />
-
-  return <CheckedCountInner checkedCount={checkedCount} />
+  if (isPending) return <CheckCountPending />
+  if (checkedItemsCount + totalItemsCount === 0) return <RunListEmpty />
+  return <CheckedCountInner />
 }
 
-type CheckedCountInnerProps = {
-  checkedCount: { checked: number; total: number }
-}
-function CheckedCountInner({ checkedCount }: CheckedCountInnerProps) {
+function CheckedCountInner() {
+  const { checkedItemsCount, totalItemsCount } = useListItems()
   // derived state
-  const { checked, total } = checkedCount
-  const isListCompleted = checked === total
+  const isListCompleted = checkedItemsCount === totalItemsCount
   const duration = 200
   // const isListCompletedDelayed = useDelayedState(isListCompleted, 500)
 
@@ -82,7 +75,7 @@ function CheckedCountInner({ checkedCount }: CheckedCountInnerProps) {
             {/* animated label text color – Chip.Label wraps Animated.Text */}
             <Chip.Label>
               <Animated.Text style={labelStyle}>
-                {checked}/{total} Produkte abgehackt
+                {checkedItemsCount}/{totalItemsCount} Produkte
               </Animated.Text>
             </Chip.Label>
 
@@ -90,7 +83,7 @@ function CheckedCountInner({ checkedCount }: CheckedCountInnerProps) {
 
           {/* progress bar */}
           <View className="flex-row">
-            <RunProgress checked={checked} total={total} />
+            <RunProgress />
           </View>
         </Chip>
       </Animated.View>
@@ -109,14 +102,18 @@ function RunListEmpty() {
       size="lg"
       className="flex-col gap-0 pt-0.5 pb-1.5"
     >
-      <Chip.Label>
-        keine Produkte
-      </Chip.Label>
+      <Chip.Label>keine Produkte</Chip.Label>
 
       {/* mock progress bar, never gets updated */}
       <View className="flex-row">
-        <RunProgress checked={0} total={1} />
+        <RunProgress />
       </View>
     </Chip>
+  );
+}
+
+function CheckCountPending() {
+  return (
+    <Skeleton className="h-8 w-28 rounded-3xl" />
   );
 }

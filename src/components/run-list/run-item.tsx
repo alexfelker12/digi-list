@@ -1,12 +1,11 @@
-import { queryKeys } from "@/lib/queries/_helper";
 import { toggleCheckedListItemMutationOptions } from "@/lib/queries/run-list-queries";
 import { getDisplayUri } from "@/lib/utils";
 import { useRunListItem } from "@/screens/context/run-list-item-context";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import { BottomSheet, Button, Card, Checkbox, PressableFeedback, Separator } from "heroui-native";
 import { InfoIcon } from "lucide-react-native";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { GestureResponderEvent, Pressable, ScrollView, useWindowDimensions, View } from "react-native";
 
 import { StrikethroughText } from "@/components/animated-strikethorugh-text";
@@ -21,27 +20,11 @@ type RunItemProps = {
 export function RunItem({ onPress }: RunItemProps) {
   const { listItem, purchaseAmount } = useRunListItem()
   const { checked, id, listId, item, notes } = listItem
-  const [isChecked, setIsChecked] = useState(checked)
 
   // has notes and/or images
   const hasMoreContext = !!notes || item.imageUris.length > 0
 
-  useEffect(() => {
-    // if items are refetched on page revisit or reset list explicitly set since useState arg doesn't set properly
-    setIsChecked(checked)
-  }, [listItem])
-
-  const qc = useQueryClient();
-  const { mutateAsync, isPending } = useMutation({
-    ...toggleCheckedListItemMutationOptions(id),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: queryKeys.checkedCount(listId) })
-      qc.invalidateQueries({
-        queryKey: queryKeys.listItems(listId),
-        refetchType: "none" // do not trigger refetch, checkbox state perfectly reflects state
-      })
-    },
-  })
+  const { mutateAsync, isPending } = useMutation(toggleCheckedListItemMutationOptions(id, listId))
 
   return (
     <PressableFeedback
@@ -49,23 +32,20 @@ export function RunItem({ onPress }: RunItemProps) {
       onPress={(event) => {
         if (isPending) return
         onPress?.(event)
-        setIsChecked(prev => !prev)
-        // use inverse, since isChecked is not yet set to true at this point of execution
-        mutateAsync({ checked: !isChecked })
+        mutateAsync({ checked: !checked })
       }}
-    // isDisabled={state here}
     >
       <Card className="flex-row justify-between items-center gap-3">
         <PressableFeedback.Highlight />
 
         <Checkbox
-          isSelected={isChecked}
-          onSelectedChange={setIsChecked}
+          isSelected={checked}
+          onSelectedChange={(isSelected) => mutateAsync({ checked: isSelected })}
         />
 
         <Card.Body className="flex-1">
           <Card.Title>
-            <StrikethroughText isChecked={isChecked} className="leading-tight text-lg">
+            <StrikethroughText isChecked={checked} className="leading-tight text-lg">
               {item.name}
             </StrikethroughText>
           </Card.Title>

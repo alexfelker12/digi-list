@@ -20,12 +20,19 @@ export default function RunListScreen() {
   >()
   const listId = +id
 
-  const { data, isPending } = useQuery(listItemsQueryOptions(listId))
-  const itemsCount = data?.length ?? 0
+  const { data, isPending } = useQuery({
+    ...listItemsQueryOptions(listId),
+    refetchOnMount: true
+  })
 
+  //* count checked items
+  const checkedItemsCount = data?.filter(({ checked }) => checked).length ?? 0
+  const totalItemsCount = data?.length ?? 0
   return (
     <ScreenLayout title={listName ?? "Einkaufsliste"} showBack>
-      <ListItemsProvider value={{ listId, listName, itemsCount }}>
+      <ListItemsProvider
+        value={{ listId, listName, checkedItemsCount, totalItemsCount, isPending }}
+      >
         <View className="flex-row items-center justify-between gap-4">
           <CheckedCount />
           <ResetList />

@@ -1,9 +1,9 @@
 import { useListItems } from "@/screens/context/list-items-context";
 import { SQLiteRunResult } from "expo-sqlite";
 import { Button, cn, Dialog } from "heroui-native";
-import { RotateCcwIcon } from "lucide-react-native";
+import { ListRestartIcon, RotateCcwIcon } from "lucide-react-native";
 import { useState } from "react";
-import { Keyboard, View } from "react-native";
+import { ActivityIndicator, Keyboard, View } from "react-native";
 import { Icon } from "../icon";
 
 
@@ -12,12 +12,12 @@ type ResetListDialogProps = {
   actionPending: boolean
 }
 export function ResetListDialog({ onConfirm, actionPending }: ResetListDialogProps) {
-  const { listName, itemsCount } = useListItems()
+  const { listName, totalItemsCount } = useListItems()
   const [isOpen, setIsOpen] = useState(false)
 
   return (
     <Dialog isOpen={isOpen} onOpenChange={(open) => {
-      if (itemsCount === 0 && open) return;
+      if (totalItemsCount === 0 && open) return;
       setIsOpen(open)
     }}>
 
@@ -26,10 +26,10 @@ export function ResetListDialog({ onConfirm, actionPending }: ResetListDialogPro
           variant="tertiary"
           size="sm"
           isIconOnly
-          isDisabled={itemsCount === 0}
+          isDisabled={totalItemsCount === 0}
           className={cn(
             // manually adding disabled styles since isDisabled does not seem to work
-            itemsCount === 0 && "opacity-50 pointer-events-none"
+            totalItemsCount === 0 && "opacity-50 pointer-events-none"
           )}
         >
           <Icon icon={RotateCcwIcon} />
@@ -55,25 +55,24 @@ export function ResetListDialog({ onConfirm, actionPending }: ResetListDialogPro
             <Dialog.Description className="leading-snug">Dein Listenfortschritt geht dabei verloren!</Dialog.Description>
           </View>
 
-          <View className="flex-row gap-2">
-            <Button
-              variant="tertiary"
-              className="flex-1"
-              onPress={() => setIsOpen(false)}
-              isDisabled={actionPending}
-            >
-              Abbrechen
-            </Button>
+          <View className="gap-2">
             <Button
               variant="secondary"
-              className="flex-1"
               onPress={async () => {
                 await onConfirm()
                 setIsOpen(false)
               }}
               isDisabled={actionPending}
             >
+              {actionPending ? <ActivityIndicator size={20} /> : <Icon icon={ListRestartIcon} />}
               <Button.Label>Zurücksetzen</Button.Label>
+            </Button>
+            <Button
+              variant="ghost"
+              onPress={() => setIsOpen(false)}
+              isDisabled={actionPending}
+            >
+              Abbrechen
             </Button>
           </View>
 

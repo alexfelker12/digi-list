@@ -1,5 +1,5 @@
 import { db } from '@/server/db';
-import { ListItemInsert, listItems, lists } from '@/server/db/schema';
+import { ListItem, ListItemInsert, listItems, lists } from '@/server/db/schema';
 import { mutationOptions, queryOptions } from '@tanstack/react-query';
 import { count, eq, sql } from 'drizzle-orm';
 import { queryKeys } from "./_helper";
@@ -26,7 +26,7 @@ export const checkedListItemsCountQueryOptions = (listId: number) => queryOption
 })
 
 // ─── Run list Mutations ───────────────────────────────────────────────────────────
-export const toggleCheckedListItemMutationOptions = (id: number) => mutationOptions({
+export const toggleCheckedListItemMutationOptions = (id: number, listId: number) => mutationOptions({
   mutationFn: async (data: Pick<ListItemInsert, "checked">) => {
     const [updatedListItem] = await db.update(listItems)
       .set(data)
@@ -35,6 +35,24 @@ export const toggleCheckedListItemMutationOptions = (id: number) => mutationOpti
 
     return updatedListItem
   },
+  onMutate: async ({ checked }, context) => {
+    await context.client.cancelQueries({ queryKey: queryKeys.listItems(listId) })
+    const previous = context.client.getQueryData(queryKeys.listItems(listId))
+
+    // optimistically set checked state
+    context.client.setQueryData(
+      queryKeys.listItems(listId),
+      (old?: ListItem[]) => old?.map(item => item.id === id ? { ...item, checked } : item)
+    )
+
+    return { previous }
+  },
+  onError: (_err, _variables, onMutateResult, context) => {
+    context.client.setQueryData(queryKeys.listItems(listId), () => onMutateResult?.previous)
+  },
+  // onSuccess: (_data, _variables, _onMutateResult, context) => {
+  //   context.client.invalidateQueries({ queryKey: queryKeys.listItems(listId) })
+  // },
 })
 
 export const markListAsCompletedMutationOptions = (id: number) => mutationOptions({

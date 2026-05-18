@@ -4,7 +4,9 @@ import { createContext, use } from 'react';
 interface ListItemsContextValue {
   listId: number
   listName: string
-  itemsCount: number
+  totalItemsCount: number
+  checkedItemsCount: number
+  isPending: boolean
 }
 const ListItemsContext = createContext<ListItemsContextValue | undefined>(undefined)
 
@@ -23,3 +25,4 @@ function ListItemsProvider(props: React.ComponentProps<typeof ListItemsContext.P
 export {
   ListItemsProvider, useListItems, type ListItemsContextValue
 };
+

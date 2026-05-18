@@ -1,14 +1,17 @@
+import { useListItems } from "@/screens/context/list-items-context";
 import { View } from "react-native";
 import Animated, { Easing, useAnimatedStyle, useDerivedValue, withTiming } from 'react-native-reanimated';
 
 
-type RunProgressProps = {
+type CalcProgressProps = {
   total: number
   checked: number
 }
-const calcProgress = ({ checked, total }: RunProgressProps) => ((checked / total) * 100)
-export function RunProgress({ checked, total }: RunProgressProps) {
-  const progressValue = calcProgress({ checked, total });
+const calcProgress = ({ checked, total }: CalcProgressProps) => ((checked / total) * 100)
+export function RunProgress() {
+  const { checkedItemsCount: checked, totalItemsCount: total } = useListItems()
+
+  const progressValue = calcProgress({ checked, total })
 
   const progress = useDerivedValue(() =>
     withTiming(progressValue, {
@@ -24,7 +27,7 @@ export function RunProgress({ checked, total }: RunProgressProps) {
   return (
     <View className="relative h-0.5 rounded-full flex-1 bg-muted overflow-hidden">
       <Animated.View
-        className="absolute h-0.5 rounded-full bg-success"
+        className="absolute h-0.5 rounded-full bg-accent"
         style={animatedStyle}
       />
     </View>

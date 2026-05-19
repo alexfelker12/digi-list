@@ -1,36 +1,40 @@
 import { EmptyListIndicator } from "@/components/empty-list-indicator";
+import { Icon } from "@/components/icon";
 import { ListFormDialog } from "@/components/lists/list-form-dialog";
 import { ItemList } from "@/components/lists/list-item";
 import { ScreenLayout } from "@/components/screen-layout";
 import { Text } from "@/components/text";
 import { allListsQueryOptions, createListMutationOptions } from "@/lib/queries/list-queries";
-import { FlashList } from "@shopify/flash-list";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { Separator } from "heroui-native";
-import { ActivityIndicator, View } from "react-native";
+import { Button, Separator } from "heroui-native";
+import { CirclePlusIcon } from "lucide-react-native";
+import { useState } from "react";
+import { ActivityIndicator, FlatList, View } from "react-native";
 
 
 export default function ListOverviewScreen() {
-  return (
-    <ScreenLayout title="Einkaufslisten">
-      <ListsListing />
-    </ScreenLayout>
-  );
-}
+  const [isOpen, setIsOpen] = useState(false)
 
-function ListsListing() {
   const { data, isPending } = useQuery(allListsQueryOptions())
   const { mutateAsync: createList } = useMutation(createListMutationOptions())
 
   return (
-    <View className="flex-1 gap-4">
+    <ScreenLayout title="Einkaufslisten">
+
       <View className="flex-row items-center justify-between">
         <Text className="text-muted italic">
           {data ? (data.length || "Keine") : 0} {data?.length === 1 ? "Eintrag" : "Einträge"}
         </Text>
 
+        <Button variant="secondary" className="h-10" onPress={() => setIsOpen(true)}>
+          <Icon icon={CirclePlusIcon} />
+          <Button.Label>Erstellen</Button.Label>
+        </Button>
+
         <ListFormDialog
+          isOpen={isOpen}
+          onOpenChange={setIsOpen}
           onSubmit={async (values) => {
             await createList(values, {
               // navigate to list details
@@ -45,7 +49,7 @@ function ListsListing() {
       <Separator />
 
       <View className="flex-1 -mx-1">
-        <FlashList
+        <FlatList
           data={data}
           keyExtractor={(list) => String(list.id)}
           renderItem={({ item: list }) => (
@@ -59,6 +63,7 @@ function ListsListing() {
           contentContainerClassName="gap-2 px-1 pb-20"
         />
       </View>
-    </View>
+
+    </ScreenLayout>
   );
 }

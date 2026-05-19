@@ -1,10 +1,11 @@
 import { DeleteDialog } from "@/components/delete-dialog";
 import { deleteListMutationOptions, updateListMutationOptions } from "@/lib/queries/list-queries";
 import { List } from "@/server/db";
-import { useMutation, useMutationState } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { Button, Card, Menu, PressableFeedback, Separator } from "heroui-native";
 import { EllipsisVerticalIcon, NotebookPenIcon, PencilIcon, Trash2Icon } from 'lucide-react-native';
+import { useState } from "react";
 import { View } from "react-native";
 import { Icon } from "../icon";
 import { ListFormDialog } from "./list-form-dialog";
@@ -14,14 +15,12 @@ type ListItemProps = {
   list: List & { itemsCount: number }
 }
 export function ItemList({ list }: ListItemProps) {
-  const actionPending = useMutationState({
-    filters: { status: 'pending' },
-    select: (mutation) => mutation.state.status === "pending",
-  }).at(-1) ?? false
+  const [editOpen, setEditOpen] = useState(false)
+  const [deleteOpen, setDeleteOpen] = useState(false)
 
   // mutations
-  const { mutateAsync: updateList } = useMutation(updateListMutationOptions(list.id))
-  const { mutateAsync: deleteList } = useMutation(deleteListMutationOptions(list.id))
+  const { mutateAsync: updateList, isPending: updatePending } = useMutation(updateListMutationOptions(list.id))
+  const { mutateAsync: deleteList, isPending: deletePending } = useMutation(deleteListMutationOptions(list.id))
 
   // navigation
   const navigateToRun = () => {
@@ -59,19 +58,26 @@ export function ItemList({ list }: ListItemProps) {
                 <Menu.Label className="mb-1">Aktionen für {list.name}</Menu.Label>
 
                 {/* edit list (for now only name) */}
-                <ListFormDialog list={list} onSubmit={async (values) => { updateList(values) }}>
-                  <Menu.Item className="items-start">
-                    <View className="mt-1">
-                      <Icon icon={PencilIcon} className="text-muted" size={16} />
-                    </View>
-                    <View className="flex-1">
-                      <Menu.ItemTitle>Name bearbeiten</Menu.ItemTitle>
-                      <Menu.ItemDescription numberOfLines={1}>
-                        Benenne die Einkaufsliste um
-                      </Menu.ItemDescription>
-                    </View>
-                  </Menu.Item>
-                </ListFormDialog>
+                <Menu.Item className="items-start"
+                  onPress={() => setEditOpen(true)}
+                >
+                  <View className="mt-1">
+                    <Icon icon={PencilIcon} className="text-muted" size={16} />
+                  </View>
+                  <View className="flex-1">
+                    <Menu.ItemTitle>Name bearbeiten</Menu.ItemTitle>
+                    <Menu.ItemDescription numberOfLines={1}>
+                      Benenne die Einkaufsliste um
+                    </Menu.ItemDescription>
+                  </View>
+                </Menu.Item>
+
+                <ListFormDialog
+                  isOpen={editOpen}
+                  onOpenChange={setEditOpen}
+                  list={list}
+                  onSubmit={async (values) => { updateList(values) }}
+                />
 
                 {/* go to edit list items screen */}
                 <Menu.Item className="items-start" onPress={() => navigateToEdit()}>
@@ -89,23 +95,27 @@ export function ItemList({ list }: ListItemProps) {
                 <Separator className="m-2" />
 
                 {/* delete list */}
+                <Menu.Item className="items-start" variant="danger"
+                  onPress={() => setDeleteOpen(true)}
+                >
+                  <View className="mt-1">
+                    <Icon icon={Trash2Icon} className="text-danger" size={16} />
+                  </View>
+                  <View className="flex-1">
+                    <Menu.ItemTitle>Einkaufsliste löschen</Menu.ItemTitle>
+                    <Menu.ItemDescription numberOfLines={1}>
+                      Listen-Fortschritt geht verloren!
+                    </Menu.ItemDescription>
+                  </View>
+                </Menu.Item>
+
                 <DeleteDialog
+                  isOpen={deleteOpen}
+                  onOpenChange={setDeleteOpen}
                   name={list.name}
                   onConfirm={deleteList}
-                  actionPending={actionPending}
-                >
-                  <Menu.Item className="items-start" variant="danger">
-                    <View className="mt-1">
-                      <Icon icon={Trash2Icon} className="text-danger" size={16} />
-                    </View>
-                    <View className="flex-1">
-                      <Menu.ItemTitle>Einkaufsliste löschen</Menu.ItemTitle>
-                      <Menu.ItemDescription numberOfLines={1}>
-                        Listen-Fortschritt geht verloren!
-                      </Menu.ItemDescription>
-                    </View>
-                  </Menu.Item>
-                </DeleteDialog>
+                  actionPending={updatePending || deletePending}
+                />
 
               </Menu.Content>
             </Menu.Portal>

@@ -25,10 +25,6 @@ export const itemQueryOptions = (id: number) => queryOptions({
 });
 
 // ─── Item Mutations ───────────────────────────────────────────────────────────
-export const dynamicItemMutationOptions = (id: number | undefined) => id
-  ? updateItemMutationOptions(id)
-  : createItemMutationOptions()
-
 export const createItemMutationOptions = () => mutationOptions({
   mutationFn: async (data: ItemFormValues) => {
     const [created] = await db.insert(items)
@@ -41,11 +37,11 @@ export const createItemMutationOptions = () => mutationOptions({
   },
 })
 
-export const updateItemMutationOptions = (id: number) => mutationOptions({
-  mutationFn: async (data: ItemFormValues) => {
+export const updateItemMutationOptions = () => mutationOptions({
+  mutationFn: async ({ itemId, data }: { itemId: number, data: ItemFormValues }) => {
     const [updated] = await db.update(items)
       .set(stringifyItem(data))
-      .where(eq(items.id, id))
+      .where(eq(items.id, itemId))
       .returning()
     return updated
   },
@@ -54,9 +50,9 @@ export const updateItemMutationOptions = (id: number) => mutationOptions({
   },
 })
 
-export const deleteItemMutationOptions = (id: number) => mutationOptions({
-  mutationFn: async () => {
-    await db.delete(items).where(eq(items.id, id))
+export const deleteItemMutationOptions = () => mutationOptions({
+  mutationFn: async ({ itemId }: { itemId: number }) => {
+    await db.delete(items).where(eq(items.id, itemId))
   },
   onSuccess: (_data, _variables, _onMutateResult, context) => {
     context.client.invalidateQueries({ queryKey: queryKeys.items() })

@@ -1,35 +1,22 @@
 import { SQLiteRunResult } from "expo-sqlite";
-import { Button, ButtonSize, ButtonVariant, Dialog } from "heroui-native";
+import { Button, Dialog } from "heroui-native";
 import { Trash2Icon } from "lucide-react-native";
-import React, { useState } from "react";
+import React from "react";
 import { Keyboard, View } from "react-native";
-import { DialogBlurOverlay } from "./dialog/dialog-blur-overlay";
 import { Icon } from "./icon";
 
 
 type DeleteDialogProps = {
-  triggerLabel?: string
-  triggerSize?: ButtonSize
-  triggerVariant?: ButtonVariant
   name: string
   onConfirm: () => Promise<SQLiteRunResult | void>
   actionPending: boolean
-  children?: React.ReactNode
+  isOpen: boolean
+  onOpenChange: (open: boolean) => void
 }
-export function DeleteDialog({
-  triggerLabel = "",
-  triggerSize = "sm",
-  triggerVariant = "danger-soft",
-  name,
-  onConfirm,
-  actionPending,
-  children
-}: DeleteDialogProps) {
-  const [isOpen, setIsOpen] = useState(false)
-
+export function DeleteDialog({ name, onConfirm, actionPending, isOpen, onOpenChange }: DeleteDialogProps) {
   return (
-    <Dialog isOpen={isOpen} onOpenChange={setIsOpen}>
-      <Dialog.Trigger asChild>
+    <Dialog isOpen={isOpen} onOpenChange={onOpenChange}>
+      {/* <Dialog.Trigger asChild>
         {children || (<Button
           size={triggerSize}
           variant={triggerVariant}
@@ -39,10 +26,10 @@ export function DeleteDialog({
           <Icon icon={Trash2Icon} className="text-danger-soft-foreground" size={18} />
           {triggerLabel && <Button.Label>{triggerLabel}</Button.Label>}
         </Button>)}
-      </Dialog.Trigger>
+      </Dialog.Trigger> */}
       <Dialog.Portal>
-        {/* <Dialog.Overlay /> */}
-        <DialogBlurOverlay />
+        <Dialog.Overlay />
+        {/* <DialogBlurOverlay /> */}
         <Dialog.Content
           className="gap-4"
           onStartShouldSetResponder={() => {
@@ -60,22 +47,24 @@ export function DeleteDialog({
             <Dialog.Description className="leading-snug">Kann nicht rückgängig gemacht werden!</Dialog.Description>
           </View>
 
-          <View className="flex-row gap-2">
-            <Button variant="tertiary" className="flex-1"
-              onPress={() => setIsOpen(false)}
-              isDisabled={actionPending}
-            >
-              Abbrechen
-            </Button>
-            <Button variant="danger-soft" className="flex-1"
+          <View className="gap-2">
+            <Button
+              variant="danger-soft"
               onPress={async () => {
                 await onConfirm()
-                setIsOpen(false)
+                onOpenChange(false)
               }}
               isDisabled={actionPending}
             >
               <Icon icon={Trash2Icon} className="text-danger-soft-foreground" />
               <Button.Label>Ja, löschen</Button.Label>
+            </Button>
+            <Button
+              variant="tertiary"
+              onPress={() => onOpenChange(false)}
+              isDisabled={actionPending}
+            >
+              Abbrechen
             </Button>
           </View>
 

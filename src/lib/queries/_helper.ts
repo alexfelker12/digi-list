@@ -1,6 +1,4 @@
-import { ItemFormValues, parseImageUris, stringifyImageUris, type Item } from '@/server/db/schema';
-
-export type ParsedItem = Omit<Item, "imageUris"> & { imageUris: string[] }
+import { ItemFormValues, ItemWithUriArray, parseImageUris, stringifyImageUris, type Item } from '@/server/db/schema';
 
 // ─── Keys ────────────────────────────────────────────────────────────────────
 export const queryKeys = {
@@ -12,7 +10,7 @@ export const queryKeys = {
   checkedCount: (listId: number) => ['lists', listId, 'checked'] as const,
 };
 
-export const parseItem = ({ imageUris, ...rest }: Item): ParsedItem => {
+export const parseItem = ({ imageUris, ...rest }: Item): ItemWithUriArray => {
   return {
     ...rest,
     imageUris: parseImageUris(imageUris)

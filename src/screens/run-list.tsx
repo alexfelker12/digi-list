@@ -5,10 +5,11 @@ import { RunItem } from "@/components/run-list/run-item";
 import { ScreenLayout } from "@/components/screen-layout";
 import { listItemsQueryOptions } from "@/lib/queries/list-item-queries";
 import { getPurchaseAmount } from "@/lib/utils";
+import { FlashList } from "@shopify/flash-list";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
 import { Separator } from "heroui-native";
-import { ActivityIndicator, FlatList, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 import { ListItemsProvider } from "./context/list-items-context";
 import { RunListItemProvider } from "./context/run-list-item-context";
 
@@ -41,7 +42,7 @@ export default function RunListScreen() {
         <Separator />
 
         <View className="flex-1 -mx-1">
-          <FlatList
+          <FlashList
             data={data}
             keyExtractor={(list) => String(list.id)}
             renderItem={({ item: listItem }) => {

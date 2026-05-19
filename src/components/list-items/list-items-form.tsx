@@ -35,7 +35,7 @@ function DraggableRow({ item, onPress, onRemove }: RowProps) {
   const isActive = useIsActive()
 
   return (
-    // padding-bottom as gap, because gap causes weird overlapping in flatlist container
+    // padding-bottom as gap, because gap causes weird overlapping in list container
     <View className="pb-2 overflow-visible">
       <Card className={cn("flex-row gap-2 items-center", isActive && "opacity-80")} asChild>
         <Pressable onPress={onPress} onLongPress={drag}>

@@ -27,6 +27,7 @@ export function ProductItem({ item, onPress }: ItemTestProps) {
   const { mutateAsync: deleteItem, isPending: deletePending } = useMutation(deleteItemMutationOptions(id))
 
   const hasImageUris = imageUris.length > 0
+
   return (
     <PressableFeedback
       className="overflow-auto"
@@ -79,6 +80,7 @@ export function ProductItem({ item, onPress }: ItemTestProps) {
                 <Menu.Label className="mb-1">Aktionen für {name}</Menu.Label>
 
                 {/* edit item */}
+                {/* // TODO: use one for each listing */}
                 <ItemFormSheet item={item} onSubmit={async (values) => { updateList(values) }}>
                   <Menu.Item className="items-start">
                     <View className="mt-1">
@@ -96,6 +98,7 @@ export function ProductItem({ item, onPress }: ItemTestProps) {
                 <Separator className="m-2" />
 
                 {/* delete item */}
+                {/* // TODO: global delete dialog with hook to set confirm action? */}
                 <DeleteDialog
                   name={name}
                   onConfirm={deleteItem}

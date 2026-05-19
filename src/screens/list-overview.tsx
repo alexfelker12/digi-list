@@ -4,10 +4,11 @@ import { ItemList } from "@/components/lists/list-item";
 import { ScreenLayout } from "@/components/screen-layout";
 import { Text } from "@/components/text";
 import { allListsQueryOptions, createListMutationOptions } from "@/lib/queries/list-queries";
+import { FlashList } from "@shopify/flash-list";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { Separator } from "heroui-native";
-import { ActivityIndicator, FlatList, View } from "react-native";
+import { ActivityIndicator, View } from "react-native";
 
 
 export default function ListOverviewScreen() {
@@ -44,7 +45,7 @@ function ListsListing() {
       <Separator />
 
       <View className="flex-1 -mx-1">
-        <FlatList
+        <FlashList
           data={data}
           keyExtractor={(list) => String(list.id)}
           renderItem={({ item: list }) => (

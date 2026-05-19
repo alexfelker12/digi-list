@@ -1,7 +1,8 @@
 import { Text } from '@/components/text';
 import { BottomSheet } from 'heroui-native/bottom-sheet';
-import { View } from "react-native";
-import { KeyboardAwareScrollView } from "react-native-keyboard-controller";
+import { Keyboard, View } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ItemForm, ItemFormProps } from "./item-form";
 
 
@@ -9,13 +10,13 @@ export function ItemFormSheet({ item, onSubmit, isOpen, onOpenChange }: ItemForm
   isOpen: boolean
   onOpenChange: (open: boolean) => void
 }) {
+  const { top } = useSafeAreaInsets()
   const isEditing = !!item
   return (
     <View className="absolute top-0 right-0">
       <BottomSheet
         isOpen={isOpen}
         onOpenChange={onOpenChange}
-
       >
         {/* <BottomSheet.Trigger asChild>
         {children || (
@@ -26,26 +27,19 @@ export function ItemFormSheet({ item, onSubmit, isOpen, onOpenChange }: ItemForm
         )}
       </BottomSheet.Trigger> */}
         <BottomSheet.Portal>
-          <BottomSheet.Overlay />
+          <BottomSheet.Overlay onPress={() => Keyboard.dismiss()} />
           <BottomSheet.Content
             contentContainerClassName="p-4 pt-0"
-            keyboardBehavior="extend"
             keyboardBlurBehavior="restore"
-            android_keyboardInputMode="adjustResize"
-            enableDynamicSizing
+            enableBlurKeyboardOnGesture
+            topInset={top}
           >
             {/* Titel */}
             <Text className="text-lg font-semibold mb-4">
               {isEditing ? 'Produkt bearbeiten' : 'Neues Produkt'}
             </Text>
-            {/* <KeyboardAvoidingView
-              behavior="padding"
-              keyboardVerticalOffset={16}
-            > */}
-            <KeyboardAwareScrollView
-              bottomOffset={16}
-              keyboardShouldPersistTaps="handled"
-            >
+
+            <ScrollView keyboardShouldPersistTaps="handled">
               <ItemForm
                 item={item}
                 onSubmit={async (values) => {
@@ -53,8 +47,8 @@ export function ItemFormSheet({ item, onSubmit, isOpen, onOpenChange }: ItemForm
                   onOpenChange(false)
                 }}
               />
-            </KeyboardAwareScrollView>
-            {/* </KeyboardAvoidingView> */}
+            </ScrollView>
+
           </BottomSheet.Content>
         </BottomSheet.Portal>
       </BottomSheet>

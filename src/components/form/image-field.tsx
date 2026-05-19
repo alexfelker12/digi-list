@@ -2,7 +2,7 @@ import { useFieldContext } from "@/lib/form/form-context";
 import { getDisplayUri, saveImageToAppStorage } from '@/lib/utils';
 import { Image } from "expo-image";
 import { launchCameraAsync, launchImageLibraryAsync, requestCameraPermissionsAsync, requestMediaLibraryPermissionsAsync } from 'expo-image-picker';
-import { Button, Label, TextField } from "heroui-native";
+import { Button, CloseButton, Label, TextField } from "heroui-native";
 import { CameraIcon, ImagesIcon, XIcon } from "lucide-react-native";
 import { useState } from "react";
 import { Alert, Pressable, View } from 'react-native';
@@ -58,9 +58,9 @@ export function ImageFieldComponent() {
         <View className="flex-row flex-wrap gap-2 mb-2">
           {uris.map((uriOrFilename, index) => (
             <View
-              key={`${uriOrFilename}-${index}`}
-              //* 23.3% is the closest to 25% minus gap-2 across all images. calc with % + px is not supported
-              className="flex-1 aspect-square max-w-[23.3%] overflow-hidden"
+              key={uriOrFilename}
+              //* 23.2% is the closest to 25% minus gap-2 across all images. calc with % + px is not supported
+              className="w-full aspect-square max-w-[23.2%] overflow-hidden"
             >
               <Pressable
                 onPress={() => {
@@ -77,13 +77,13 @@ export function ImageFieldComponent() {
                   transition={200}
                 />
               </Pressable>
-              <Pressable
-                className="absolute top-0.5 right-0.5"
+              <CloseButton
+                className="absolute top-0.5 right-0.5 size-4.5"
                 onPress={() => field.handleChange(uris.filter((u) => u !== uriOrFilename))}
                 hitSlop={8}
               >
-                <Icon icon={XIcon} className="text-white" />
-              </Pressable>
+                <Icon icon={XIcon} size={12} />
+              </CloseButton>
             </View>
           ))}
 

@@ -12,6 +12,7 @@ import { useAtom } from "jotai";
 import { PlusIcon, Trash2Icon } from "lucide-react-native";
 import { useState } from "react";
 import { GestureResponderEvent, Keyboard, Pressable, View } from "react-native";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import ReorderableList, {
   ReorderableListRenderItemInfo, ReorderableListReorderEvent, reorderItems, useIsActive, useReorderableDrag
 } from "react-native-reorderable-list";
@@ -149,44 +150,46 @@ export function ListItemsForm({ listId, list, onSubmit }: ListItemFormProps) {
             >
               <Dialog.Portal>
                 <Dialog.Overlay />
-                <Dialog.Content
-                  className="gap-4"
-                  onStartShouldSetResponder={() => {
-                    if (Keyboard.isVisible()) {
-                      Keyboard.dismiss()
-                      return true
-                    }
-                    return false
-                  }}
-                >
-                  <Dialog.Close variant="ghost" className="absolute top-1.5 right-1.5" />
+                <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={16}>
+                  <Dialog.Content
+                    className="gap-4"
+                    onStartShouldSetResponder={() => {
+                      if (Keyboard.isVisible()) {
+                        Keyboard.dismiss()
+                        return true
+                      }
+                      return false
+                    }}
+                  >
+                    <Dialog.Close variant="ghost" className="absolute top-1.5 right-1.5" />
 
-                  <View className="gap-1">
-                    <Dialog.Title
-                      className="leading-[1.2] pr-6 text-accent"
-                      numberOfLines={1}
-                    >
-                      {editingItem !== null && editingItem.item && `${editingItem.item.name}`}
-                    </Dialog.Title>
-                    <Dialog.Description className="leading-snug">
-                      Passe hier die Menge und Einheit an
-                    </Dialog.Description>
-                  </View>
+                    <View className="gap-1">
+                      <Dialog.Title
+                        className="leading-[1.2] pr-6 text-accent"
+                        numberOfLines={1}
+                      >
+                        {editingItem !== null && editingItem.item && `${editingItem.item.name}`}
+                      </Dialog.Title>
+                      <Dialog.Description className="leading-snug">
+                        Passe hier die Menge und Einheit an
+                      </Dialog.Description>
+                    </View>
 
-                  {editingItem !== null &&
-                    typeof editingItem.sortOrder !== "undefined" && (
-                      <ListItemEditFields
-                        form={form}
-                        index={editingItem.sortOrder}
-                        buttonLabel={isNewItem ? "Hinzufügen" : "Speichern"}
-                        onConfirm={() => {
-                          setItemDraft(null)
-                          setIsNewItem(false)
-                          setIsOpen(false)
-                        }}
-                      />
-                    )}
-                </Dialog.Content>
+                    {editingItem !== null &&
+                      typeof editingItem.sortOrder !== "undefined" && (
+                        <ListItemEditFields
+                          form={form}
+                          index={editingItem.sortOrder}
+                          buttonLabel={isNewItem ? "Hinzufügen" : "Speichern"}
+                          onConfirm={() => {
+                            setItemDraft(null)
+                            setIsNewItem(false)
+                            setIsOpen(false)
+                          }}
+                        />
+                      )}
+                  </Dialog.Content>
+                </KeyboardAvoidingView>
               </Dialog.Portal>
             </Dialog>
           </View>
@@ -249,8 +252,6 @@ const ListItemEditFields = withForm({
     onConfirm: () => { },
   },
   render: function Render({ form, index, buttonLabel, onConfirm }) {
-    // TODO: use this from heroui
-    // https://heroui.com/docs/native/components/bottom-sheet#with-keyboard-aware-input
     return (
       <View className="gap-4">
         <View className="gap-3 flex-row">

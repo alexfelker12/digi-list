@@ -1,3 +1,4 @@
+import { useKeyboardAwareHandlers } from "@/hooks/use-keyboard-aware-handlers";
 import { useFieldContext } from "@/lib/form/form-context";
 import { FieldError, Input, Label, TextField } from "heroui-native";
 import { useState } from "react";
@@ -10,6 +11,7 @@ interface NumberFieldProps {
 export function NumberFieldComponent({ label, placeholder }: NumberFieldProps) {
   const field = useFieldContext<number | null>()
   const [displayValue, setDisplayValue] = useState(field.state.value?.toString() ?? "")
+  const { onFocus } = useKeyboardAwareHandlers();
 
   // create invalid state and error message
   const meta = field.state.meta
@@ -36,6 +38,7 @@ export function NumberFieldComponent({ label, placeholder }: NumberFieldProps) {
             field.handleChange(isNaN(parsed) ? null : parsed) // syncing displayValue to form state
           }
         }}
+        onFocus={onFocus}
         onBlur={field.handleBlur}
       />
 

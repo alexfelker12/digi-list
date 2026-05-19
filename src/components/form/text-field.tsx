@@ -1,3 +1,4 @@
+import { useKeyboardAwareHandlers } from "@/hooks/use-keyboard-aware-handlers";
 import { useFieldContext } from "@/lib/form/form-context";
 import { FieldError, Input, Label, TextField } from "heroui-native";
 
@@ -9,6 +10,7 @@ interface TextFieldProps {
 }
 export function TextFieldComponent({ label, placeholder, multiline }: TextFieldProps) {
   const field = useFieldContext<string>();
+  const { onFocus } = useKeyboardAwareHandlers();
 
   // create invalid state and error message
   const meta = field.state.meta
@@ -24,6 +26,7 @@ export function TextFieldComponent({ label, placeholder, multiline }: TextFieldP
         placeholder={placeholder}
         value={field.state.value ?? ''}
         onChangeText={field.handleChange}
+        onFocus={onFocus}
         onBlur={field.handleBlur}
         multiline={multiline}
         numberOfLines={multiline ? 3 : 1}

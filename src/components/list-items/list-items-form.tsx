@@ -217,7 +217,8 @@ export function ListItemsForm({ listId, list, onSubmit }: ListItemFormProps) {
                       field.pushValue(listItem)
                       setEditingItem(listItem)
                       setIsNewItem(true)
-                      setIsOpen(true)
+                      //* add litte delay because of screen back transition
+                      setTimeout(() => setIsOpen(true), 250)
                     }
                   }}
                 >

@@ -1,5 +1,5 @@
 import { db } from '@/server/db';
-import { items, List, listItems, ListItemsFormValues } from '@/server/db/schema';
+import { items, listItems, ListItemsFormValues, ListWithItemCount } from '@/server/db/schema';
 import { mutationOptions, queryOptions } from '@tanstack/react-query';
 import { eq } from 'drizzle-orm';
 import { parseItem, queryKeys } from "./_helper";
@@ -66,7 +66,7 @@ export const updateListItemsMutationOptions = (listId: number) => mutationOption
     // set items count since lists are not invalidated after saving list items
     context.client.setQueryData(
       queryKeys.lists(),
-      (old?: (List & { itemsCount: number })[]) => old?.map(list => list.id === listId
+      (old?: ListWithItemCount[]) => old?.map(list => list.id === listId
         ? { ...list, itemsCount: listItems.length }
         : list
       )

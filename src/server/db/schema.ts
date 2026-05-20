@@ -41,6 +41,7 @@ export const listItems = sqliteTable('list_item', {
 //* types, constants and helpers
 export type List = typeof lists.$inferSelect;
 export type NewList = typeof lists.$inferInsert;
+export type ListWithItemCount = List & { itemsCount: number }
 export type Item = typeof items.$inferSelect;
 export type ItemWithUriArray = Omit<Item, 'imageUris'> & { imageUris: string[] }
 export type NewItem = typeof items.$inferInsert;

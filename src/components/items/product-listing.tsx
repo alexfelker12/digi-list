@@ -35,7 +35,7 @@ export function ProductsListing({ data, isPending, className, onPress }: Product
   }, [])
 
   // mutations
-  const { mutateAsync: updateList } = useMutation(updateItemMutationOptions())
+  const { mutateAsync: updateItem } = useMutation(updateItemMutationOptions())
   const { mutateAsync: deleteItem, isPending: deletePending } = useMutation(deleteItemMutationOptions())
 
   // flashlist
@@ -78,7 +78,7 @@ export function ProductsListing({ data, isPending, className, onPress }: Product
         item={selectedItem}
         onSubmit={async (data) => {
           if (!selectedItem) return;
-          updateList({ itemId: selectedItem.id, data })
+          updateItem({ itemId: selectedItem.id, data })
         }}
       />
 

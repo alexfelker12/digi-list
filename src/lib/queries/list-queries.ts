@@ -37,11 +37,12 @@ export const createListMutationOptions = () => mutationOptions({
   },
 })
 
-export const updateListMutationOptions = (id: number) => mutationOptions({
-  mutationFn: async (data: ListFormValues) => {
+
+export const updateListMutationOptions = () => mutationOptions({
+  mutationFn: async ({ listId, data }: { listId: number, data: ListFormValues }) => {
     const [updated] = await db.update(lists)
       .set(data)
-      .where(eq(lists.id, id))
+      .where(eq(lists.id, listId))
       .returning()
     return updated
   },
@@ -50,9 +51,9 @@ export const updateListMutationOptions = (id: number) => mutationOptions({
   },
 })
 
-export const deleteListMutationOptions = (id: number) => mutationOptions({
-  mutationFn: async () => {
-    await db.delete(lists).where(eq(lists.id, id))
+export const deleteListMutationOptions = () => mutationOptions({
+  mutationFn: async ({ listId }: { listId: number }) => {
+    await db.delete(lists).where(eq(lists.id, listId))
   },
   onSuccess: (_data, _variables, _onMutateResult, context) => {
     context.client.invalidateQueries({ queryKey: queryKeys.lists() })

@@ -1,10 +1,10 @@
 import { getDisplayUri } from "@/lib/utils";
 import { ItemWithUriArray } from "@/server/db";
 import { Image } from "expo-image";
-import { Button, Card, Menu, PressableFeedback, Separator } from "heroui-native";
-import { EllipsisVerticalIcon, SquarePenIcon, Trash2Icon } from "lucide-react-native";
+import { Button, Card, PressableFeedback } from "heroui-native";
+import { EllipsisVerticalIcon } from "lucide-react-native";
 import { useState } from "react";
-import { GestureResponderEvent, Pressable, View } from "react-native";
+import { GestureResponderEvent, Pressable } from "react-native";
 import { Icon } from "../icon";
 import { ImagePlaceholder } from "../image/image-placeholder";
 import { ImageViewerModal } from "../image/image-viewer-modal";
@@ -12,11 +12,10 @@ import { ImageViewerModal } from "../image/image-viewer-modal";
 
 type ItemTestProps = {
   item: ItemWithUriArray
+  openMenu: (list: ItemWithUriArray) => void
   onPress?: (item: ItemWithUriArray, event: GestureResponderEvent) => void
-  openEditSheet: (item: ItemWithUriArray) => void
-  openDeleteDialog: (item: ItemWithUriArray) => void
 }
-export function ProductItem({ item, onPress, openEditSheet, openDeleteDialog }: ItemTestProps) {
+export function ProductItem({ item, openMenu, onPress }: ItemTestProps) {
   const { imageUris, name } = item
   const [viewerVisible, setViewerVisible] = useState(false)
   const hasImageUris = imageUris.length > 0
@@ -60,53 +59,16 @@ export function ProductItem({ item, onPress, openEditSheet, openDeleteDialog }: 
           {/* // TODO: more information here? */}
         </Card.Body>
 
-        <Card.Footer className="">
-          <Menu presentation="bottom-sheet">
-            <Menu.Trigger asChild>
-              <Button variant="outline" className="h-10" hitSlop={8} isIconOnly>
-                <Icon icon={EllipsisVerticalIcon} size={18} />
-              </Button>
-            </Menu.Trigger>
-            <Menu.Portal>
-              <Menu.Overlay />
-              <Menu.Content presentation="bottom-sheet" contentContainerClassName="pt-1">
-                <Menu.Label className="mb-1">Aktionen für {name}</Menu.Label>
-
-                {/* edit item */}
-                <Menu.Item className="items-start"
-                  onPress={() => openEditSheet(item)}
-                >
-                  <View className="mt-1">
-                    <Icon icon={SquarePenIcon} className="text-muted" size={16} />
-                  </View>
-                  <View className="flex-1">
-                    <Menu.ItemTitle>Bearbeiten</Menu.ItemTitle>
-                    <Menu.ItemDescription numberOfLines={1}>
-                      Passe Name, Bilder, etc... an
-                    </Menu.ItemDescription>
-                  </View>
-                </Menu.Item>
-
-                <Separator className="m-2" />
-
-                {/* delete item */}
-                <Menu.Item className="items-start" variant="danger"
-                  onPress={() => openDeleteDialog(item)}
-                >
-                  <View className="mt-1">
-                    <Icon icon={Trash2Icon} className="text-danger" size={16} />
-                  </View>
-                  <View className="flex-1">
-                    <Menu.ItemTitle>Löschen</Menu.ItemTitle>
-                    <Menu.ItemDescription numberOfLines={1}>
-                      Wird aus allen Einkaufslisten entfernt!
-                    </Menu.ItemDescription>
-                  </View>
-                </Menu.Item>
-
-              </Menu.Content>
-            </Menu.Portal>
-          </Menu>
+        <Card.Footer className="flex-row gap-1.5">
+          <Button
+            variant="outline"
+            className="h-10"
+            onPress={() => openMenu(item)}
+            hitSlop={8}
+            isIconOnly
+          >
+            <Icon icon={EllipsisVerticalIcon} size={18} />
+          </Button>
         </Card.Footer>
 
       </Card>

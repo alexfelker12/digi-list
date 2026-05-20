@@ -2,10 +2,12 @@ import { EmptyListIndicator } from "@/components/empty-list-indicator";
 import { deleteItemMutationOptions, updateItemMutationOptions } from "@/lib/queries/item-queries";
 import { ItemWithUriArray } from "@/server/db";
 import { useMutation } from "@tanstack/react-query";
-import { cn } from "heroui-native";
+import { cn, Menu, Separator } from "heroui-native";
+import { SquarePenIcon, Trash2Icon } from "lucide-react-native";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, FlatList, GestureResponderEvent, ListRenderItem, View } from "react-native";
 import { DeleteDialog } from "../delete-dialog";
+import { Icon } from "../icon";
 import { ItemFormSheet } from "./item-form-sheet";
 import { ProductItem } from "./product-item";
 
@@ -22,16 +24,13 @@ type ProductsListingProps = {
 export function ProductsListing({ data, isPending, className, onPress }: ProductsListingProps) {
   // open state edit/delete context
   const [selectedItem, setSelectedItem] = useState<ItemWithUriArray | undefined>(undefined)
+  const [menuOpen, setMenuOpen] = useState(false)
   const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
 
-  const handleOpenEdit = useCallback((item: ItemWithUriArray) => {
+  const handleOpenMenu = useCallback((item: ItemWithUriArray) => {
     setSelectedItem(item)
-    setEditOpen(true)
-  }, [])
-  const handleOpenDelete = useCallback((item: ItemWithUriArray) => {
-    setSelectedItem(item)
-    setDeleteOpen(true)
+    setMenuOpen(true)
   }, [])
 
   // mutations
@@ -40,14 +39,7 @@ export function ProductsListing({ data, isPending, className, onPress }: Product
 
   // flashlist
   const renderItem = useCallback<ListRenderItem<ItemWithUriArray>>(
-    ({ item }) => (
-      <ProductItem
-        item={item}
-        onPress={onPress}
-        openEditSheet={handleOpenEdit}
-        openDeleteDialog={handleOpenDelete}
-      />
-    ),
+    ({ item }) => <ProductItem item={item} onPress={onPress} openMenu={handleOpenMenu} />,
     [onPress]
   )
   const keyExtractor = useCallback(
@@ -71,29 +63,73 @@ export function ProductsListing({ data, isPending, className, onPress }: Product
         contentContainerClassName={cn("gap-2 px-1 pb-1", className)}
       />
 
-      {/* one edit sheet for all product items */}
-      <ItemFormSheet
-        isOpen={editOpen}
-        onOpenChange={setEditOpen}
-        item={selectedItem}
-        onSubmit={async (data) => {
-          if (!selectedItem) return;
-          updateItem({ itemId: selectedItem.id, data })
-        }}
-      />
-
-      {/* one delete dialog for all product items */}
-      <DeleteDialog
-        isOpen={deleteOpen}
-        onOpenChange={setDeleteOpen}
-        name={selectedItem?.name ?? ""}
-        onConfirm={async () => {
-          if (!selectedItem) return;
-          deleteItem({ itemId: selectedItem.id })
-        }}
-        actionPending={deletePending}
+      <Menu
+        presentation="bottom-sheet"
+        isOpen={menuOpen}
+        onOpenChange={setMenuOpen}
       >
-      </DeleteDialog>
+        <Menu.Portal>
+          <Menu.Overlay />
+          <Menu.Content presentation="bottom-sheet" contentContainerClassName="pt-1">
+            <Menu.Label className="mb-1">Aktionen für {selectedItem?.name ?? ""}</Menu.Label>
+
+            {/* edit item */}
+            <Menu.Item className="items-start"
+              onPress={() => setEditOpen(true)}
+            >
+              <View className="mt-1">
+                <Icon icon={SquarePenIcon} className="text-muted" size={16} />
+              </View>
+              <View className="flex-1">
+                <Menu.ItemTitle>Bearbeiten</Menu.ItemTitle>
+                <Menu.ItemDescription numberOfLines={1}>
+                  Passe Name, Bilder, etc... an
+                </Menu.ItemDescription>
+              </View>
+            </Menu.Item>
+
+            <ItemFormSheet
+              isOpen={editOpen}
+              onOpenChange={setEditOpen}
+              item={selectedItem}
+              onSubmit={async (data) => {
+                if (!selectedItem) return;
+                updateItem({ itemId: selectedItem.id, data })
+              }}
+            />
+
+            <Separator className="m-2" />
+
+            {/* delete item */}
+            <Menu.Item className="items-start" variant="danger"
+              onPress={() => setDeleteOpen(true)}
+            >
+              <View className="mt-1">
+                <Icon icon={Trash2Icon} className="text-danger" size={16} />
+              </View>
+              <View className="flex-1">
+                <Menu.ItemTitle>Löschen</Menu.ItemTitle>
+                <Menu.ItemDescription numberOfLines={1}>
+                  Wird aus allen Einkaufslisten entfernt!
+                </Menu.ItemDescription>
+              </View>
+            </Menu.Item>
+
+            <DeleteDialog
+              isOpen={deleteOpen}
+              onOpenChange={setDeleteOpen}
+              name={selectedItem?.name ?? ""}
+              onConfirm={async () => {
+                if (!selectedItem) return;
+                deleteItem({ itemId: selectedItem.id })
+              }}
+              actionPending={deletePending}
+            />
+
+          </Menu.Content>
+        </Menu.Portal>
+      </Menu>
+
     </View>
   );
 }

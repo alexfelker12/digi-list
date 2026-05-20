@@ -1,5 +1,5 @@
 import { db } from '@/server/db';
-import { items, listItems, ListItemsFormValues } from '@/server/db/schema';
+import { items, List, listItems, ListItemsFormValues } from '@/server/db/schema';
 import { mutationOptions, queryOptions } from '@tanstack/react-query';
 import { eq } from 'drizzle-orm';
 import { parseItem, queryKeys } from "./_helper";
@@ -55,6 +55,29 @@ export const updateListItemsMutationOptions = (listId: number) => mutationOption
         .values(listItemsWithoutIds)
         .returning()
     })
+  },
+  onMutate: async ({ listItems }, context) => {
+    await context.client.cancelQueries({ queryKey: queryKeys.listItems(listId) })
+    // TODO: prevListItems are not optimistically updated, there prev state not needed
+    //* handle onSuccess/onError in ListItemsForm to properly set/reset form values
+    const prevListItems = context.client.getQueryData(queryKeys.listItems(listId))
+    const prevLists = context.client.getQueryData(queryKeys.lists())
+
+    // set items count since lists are not invalidated after saving list items
+    context.client.setQueryData(
+      queryKeys.lists(),
+      (old?: (List & { itemsCount: number })[]) => old?.map(list => list.id === listId
+        ? { ...list, itemsCount: listItems.length }
+        : list
+      )
+    )
+
+    return { prevListItems, prevLists }
+  },
+  onError: (_err, _variables, onMutateResult, context) => {
+    // TODO: check if this works, maybe mock error
+    context.client.setQueryData(queryKeys.listItems(listId), () => onMutateResult?.prevListItems)
+    context.client.setQueryData(queryKeys.lists(), () => onMutateResult?.prevLists)
   },
   onSuccess: (_data, _variables, _onMutateResult, context) => {
     context.client.invalidateQueries({ queryKey: queryKeys.listItems(listId) })

@@ -2,7 +2,8 @@ import { useAppForm } from "@/lib/form";
 import { itemInsertSchema, type ItemFormValues } from '@/server/db/schema';
 import { SQLiteRunResult } from "expo-sqlite";
 import { Separator } from "heroui-native/separator";
-import { ScrollView, View } from 'react-native';
+import { Animated, ScrollView, View } from 'react-native';
+import { useKeyboardAnimation } from "react-native-keyboard-controller";
 
 
 const defaultValues: ItemFormValues = {
@@ -27,12 +28,15 @@ export function ItemForm({ item, onSubmit }: ItemFormProps) {
     },
   })
 
+  const { height } = useKeyboardAnimation()
+  // const { bottom } = useSafeAreaInsets()
+
   return (
     <View className="flex-1 gap-4">
       {/* give this view flex-1 when save button should be at the bottom when scrolling */}
       {/* flex-1 altough forces save button to be at the bottom of the tab. */}
-      {/* // TODO (maybe): find a way to let save button "grow" with content and cap at bottom of tab */}
-      <View className="-mx-1">
+      {/* // TODO (maybe): optimize keyboard aware safe button */}
+      <View className="flex-1 -mx-1">
         <ScrollView
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -49,9 +53,11 @@ export function ItemForm({ item, onSubmit }: ItemFormProps) {
 
       <Separator />
 
-      <form.AppForm>
-        <form.SubmitButton label={item ? 'Änderungen speichern' : 'Produkt anlegen'} />
-      </form.AppForm>
+      <Animated.View style={{ transform: [{ translateY: height }] }}>
+        <form.AppForm>
+          <form.SubmitButton label={item ? 'Änderungen speichern' : 'Produkt anlegen'} />
+        </form.AppForm>
+      </Animated.View>
     </View>
   );
 }

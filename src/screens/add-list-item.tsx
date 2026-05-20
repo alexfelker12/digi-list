@@ -14,9 +14,15 @@ export default function AddListItemScreen() {
 
   const handleSelect = useSelectItem()
   const { data, isPending } = useQuery(allItemsQueryOptions())
+
+  const { onSuccess, ...mutationOptions } = createItemMutationOptions()
   const { mutateAsync } = useMutation({
-    ...createItemMutationOptions(),
-    onSuccess: (newItem) => handleSelect(parseItem(newItem))
+    ...mutationOptions,
+    onSuccess: (...args) => {
+      const newItem = args[0]
+      onSuccess?.(...args) // since create item has a general onSuccess call it here to not override
+      handleSelect(parseItem(newItem))
+    },
   })
 
   return (

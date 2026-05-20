@@ -15,6 +15,7 @@ type ListItemProps = {
   list: List & { itemsCount: number }
 }
 export function ItemList({ list }: ListItemProps) {
+  // TODO: adjust list listing the same way as product listing
   const [editOpen, setEditOpen] = useState(false)
   const [deleteOpen, setDeleteOpen] = useState(false)
 

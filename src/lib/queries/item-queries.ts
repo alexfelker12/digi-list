@@ -13,7 +13,8 @@ export const allItemsQueryOptions = () => queryOptions({
     const rows = await db.select().from(items);
     return rows.map(parseItem);
   },
-});
+  refetchOnMount: false,
+})
 
 export const itemQueryOptions = (id: number) => queryOptions({
   queryKey: queryKeys.item(id),
@@ -22,7 +23,7 @@ export const itemQueryOptions = (id: number) => queryOptions({
     if (!row) throw new Error(`Item ${id} nicht gefunden`);
     return parseItem(row);
   },
-});
+})
 
 // ─── Item Mutations ───────────────────────────────────────────────────────────
 export const createItemMutationOptions = () => mutationOptions({

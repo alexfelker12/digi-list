@@ -37,6 +37,7 @@ export const listItemsQueryOptions = (listId: number) => queryOptions({
 
     return parsedListItemsByListId
   },
+  refetchOnReconnect: false,
 });
 
 // ─── List item Mutations ───────────────────────────────────────────────────────────

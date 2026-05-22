@@ -15,10 +15,11 @@ export function useSelectItem() {
   }, [callback])
 
   const handleSelect = (item: ItemWithUriArray) => {
-    setCallback(null)
-    callbackRef.current?.(item)
+    const cb = callbackRef.current
     callbackRef.current = null
+    setCallback(null)
     router.back()
+    requestAnimationFrame(() => cb?.(item))
   }
 
   useEffect(() => {

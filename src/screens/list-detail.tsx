@@ -14,8 +14,7 @@ export default function ListDetailScreen() {
   const listId = +id
 
   const { data, isPending } = useQuery(listItemsQueryOptions(listId))
-
-  const { mutateAsync } = useMutation(updateListItemsMutationOptions(listId))
+  const { mutateAsync: updateListItems } = useMutation(updateListItemsMutationOptions(listId))
 
   return (
     <ScreenLayout title={listName ?? "Details"} showBack className="pb-0">
@@ -26,7 +25,7 @@ export default function ListDetailScreen() {
           listId={listId}
           list={{ listItems: data }}
           onSubmit={async (values) => {
-            await mutateAsync(values)
+            await updateListItems(values)
           }}
         />
       )}

@@ -10,7 +10,8 @@
       "node": "22.13.0"
     },
     "preview": {
-      "distribution": "internal"
+      "distribution": "internal",
+      "node": "22.13.0"
     },
     "production": {
       "autoIncrement": true

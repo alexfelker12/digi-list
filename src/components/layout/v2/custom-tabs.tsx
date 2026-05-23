@@ -28,10 +28,10 @@ export function CustomTabsLayout() {
       </CustomTabList>
 
       <View
-        className="pb-safe border-t border-border bg-white dark:bg-black"
-        style={{ elevation: 4 }}
+        className="border-t border-border bg-white dark:bg-black"
+        style={{ elevation: 8 }}
       >
-        <View className="flex-row p-2">
+        <View className="flex-row">
           <CustomTabTrigger name="home" asChild>
             <SyncedTabsTrigger
               icon={NotebookTextIcon}
@@ -39,7 +39,7 @@ export function CustomTabsLayout() {
             />
           </CustomTabTrigger>
 
-          <Separator orientation="vertical" className="bg-muted/25" />
+          <Separator orientation="vertical" className="bg-muted/25 h-3/4 my-auto" />
 
           <CustomTabTrigger name="products" asChild>
             <SyncedTabsTrigger
@@ -48,7 +48,7 @@ export function CustomTabsLayout() {
             />
           </CustomTabTrigger>
 
-          <Separator orientation="vertical" className="bg-muted/25" />
+          <Separator orientation="vertical" className="bg-muted/25 h-3/4 my-auto" />
 
           <CustomTabTrigger name="transfer" asChild>
             <SyncedTabsTrigger
@@ -58,6 +58,9 @@ export function CustomTabsLayout() {
           </CustomTabTrigger>
         </View>
       </View>
+
+      {/* bottom navbar bg */}
+      <View className="pb-safe bg-white/90 dark:bg-black/90" />
 
     </CustomTabs>
   );
@@ -91,12 +94,12 @@ export function SyncedTabsTrigger({
   })
 
   return (
-    <Pressable className="flex-1" {...props}>
-      <View className="flex-1 flex-col gap-0.5 items-center">
+    <Pressable className="flex-1 py-3" {...props}>
+      <View className="flex-1 flex-col gap-1 items-center">
 
-        <Icon icon={icon} className="text-muted" size={24} />
+        <Icon icon={icon} className="text-muted" size={22} />
         <Animated.View style={{ opacity: focusAnimation, position: "absolute" }}>
-          <Icon icon={icon} className="text-accent" size={24} />
+          <Icon icon={icon} className="text-accent" size={22} />
         </Animated.View>
 
         <Animated.Text className="text-xs" style={{ color: textColor }} numberOfLines={1}>

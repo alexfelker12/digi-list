@@ -8,17 +8,16 @@ import {
 } from 'expo-router/ui';
 import { Separator, useThemeColor } from 'heroui-native';
 import { DownloadIcon, LucideIcon, NotebookTextIcon, TablePropertiesIcon } from "lucide-react-native";
-import { Ref, useEffect, useRef, useState } from "react";
+import { Ref, useEffect, useRef } from "react";
 import { Animated, Pressable, View } from "react-native";
 
 
 const ANIMATION_DURATION = 150
 export function CustomTabsLayout() {
-  const [value, setValue] = useState("1")
-
   return (
     <CustomTabs>
-      <CustomTabSlot />
+      {/* detachInactiveScreens avoids content flicker, but keeps screens in memory. Maybe find a workaround some day */}
+      <CustomTabSlot detachInactiveScreens={false} />
 
       {/* Hidden TabList — just defines routes, no UI */}
       <CustomTabList className="hidden">
@@ -105,6 +104,7 @@ export function SyncedTabsTrigger({
         <Animated.Text className="text-xs" style={{ color: textColor }} numberOfLines={1}>
           {label}
         </Animated.Text>
+
       </View>
     </Pressable>
   );

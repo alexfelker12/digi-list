@@ -8,9 +8,6 @@ import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import { SQLiteProvider } from 'expo-sqlite';
 import { useEffect } from "react";
 
-import * as SystemUI from 'expo-system-ui';
-
-import { useThemeColor } from "heroui-native";
 import { HeroUINativeProvider } from 'heroui-native/provider';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { KeyboardProvider } from 'react-native-keyboard-controller';
@@ -40,9 +37,6 @@ function MigrationsGuard({ children }: { children: React.ReactNode }) {
 
 const queryClient = new QueryClient();
 export default function RootLayout() {
-  const background = useThemeColor("background")
-  SystemUI.setBackgroundColorAsync(background)
-
   return (
     <QueryClientProvider client={queryClient}>
       <SQLiteProvider databaseName="digi-list.db">

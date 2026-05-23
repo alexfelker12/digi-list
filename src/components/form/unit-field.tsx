@@ -1,7 +1,7 @@
 import { useFieldContext } from "@/lib/form/form-context";
 import { unitMap, UNITS, type Unit } from '@/server/db/schema';
-import { cn, FieldError, Label, Select, TextField } from "heroui-native";
-import { useState } from "react";
+import { Button, cn, FieldError, Label, Select, Separator, TextField } from "heroui-native";
+import React, { useState } from "react";
 import { Keyboard } from "react-native";
 
 
@@ -38,28 +38,40 @@ export function UnitFieldComponent({ label }: NumberFieldProps) {
               : null
           )
         }}
-        presentation="popover"
+        presentation="bottom-sheet"
       >
-        <Select.Trigger className="text-base py-2.5 border border-transparent dark:border-border dark:focus:border-accent">
-          <Select.Value placeholder={label} />
-          <Select.TriggerIndicator />
+        <Select.Trigger
+          className="text-base border border-transparent dark:border-border dark:focus:border-accent"
+          asChild
+        >
+          <Button variant="outline" size="lg">
+            <Button.Label><Select.Value placeholder={label} /></Button.Label>
+            <Select.TriggerIndicator />
+          </Button>
         </Select.Trigger>
 
-        <Select.Portal disableFullWindowOverlay>
+        <Select.Portal>
           <Select.Overlay />
-          <Select.Content presentation="popover" width="trigger" offset={4} className="p-2">
-            {UNITS.map((unit) => {
+          <Select.Content
+            presentation="bottom-sheet"
+            contentContainerClassName="pt-0"
+          >
+            <Select.ListLabel>Einheit</Select.ListLabel>
+            {UNITS.map((unit, index) => {
               return (
-                <Select.Item key={unit} label={unitMap[unit]} value={unit} className="px-1 py-2">
-                  {({ isSelected }) => (
-                    <>
-                      <Select.ItemLabel
-                        className={cn("text-foreground", isSelected && "text-accent font-medium")}
-                      />
-                      <Select.ItemIndicator />
-                    </>
-                  )}
-                </Select.Item>
+                <React.Fragment key={unit}>
+                  <Select.Item label={unitMap[unit]} value={unit} className="py-3">
+                    {({ isSelected }) => (
+                      <>
+                        <Select.ItemLabel
+                          className={cn("text-foreground text-base", isSelected && "text-accent font-medium")}
+                        />
+                        <Select.ItemIndicator />
+                      </>
+                    )}
+                  </Select.Item>
+                  {index < UNITS.length - 1 && <Separator />}
+                </React.Fragment>
               );
             })}
           </Select.Content>

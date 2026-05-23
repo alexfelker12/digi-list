@@ -1,35 +1,23 @@
-import { navCallbackAtom } from "@/lib/atoms/addItemAtom"
-import { ItemWithUriArray } from "@/server/db"
-import { router, useNavigation } from "expo-router"
-import { useAtom } from "jotai"
-import { useEffect, useRef } from "react"
+import { addItemAtom } from "@/lib/atoms/add-item-atom";
+import { ItemWithUriArray } from "@/server/db";
+import { router, useNavigation } from "expo-router";
+import { useAtom } from "jotai";
+import { useEffect } from "react";
 
 
 export function useSelectItem() {
-  const [callback, setCallback] = useAtom(navCallbackAtom)
+  const [, setAddItem] = useAtom(addItemAtom)
   const navigation = useNavigation()
-  const callbackRef = useRef(callback)
-
-  useEffect(() => {
-    callbackRef.current = callback
-  }, [callback])
-
-  const handleSelect = (item: ItemWithUriArray) => {
-    const cb = callbackRef.current
-    callbackRef.current = null
-    setCallback(null)
-    router.back()
-    requestAnimationFrame(() => cb?.(item))
-  }
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', () => {
-      callbackRef.current?.(null)
-      callbackRef.current = null
-      setCallback(null)
+      setAddItem({ status: 'idle' })
     })
     return unsubscribe
   }, [])
 
-  return handleSelect
+  return (item: ItemWithUriArray) => {
+    setAddItem({ status: 'selected', item })
+    router.back()
+  }
 }

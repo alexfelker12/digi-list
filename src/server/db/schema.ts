@@ -75,7 +75,6 @@ export const listInsertSchema = createInsertSchema(lists);
 
 export type ListFormValues = z.infer<typeof listInsertSchema>;
 
-
 //* list item schema and types
 export const listItemSchema = createInsertSchema(listItems, {
   quantity: z.number({
@@ -99,6 +98,12 @@ export const listItemsInsertSchema = z.object({
   listItems: z.array(listItemSchema)
 })
 
+export const listItemEditSchema = listItemSchema.pick({
+  quantity: true,
+  unit: true,
+  notes: true
+})
+
 export const unitMap: Record<Unit, string> = {
   kg: 'Kilogramm',
   g: 'Gramm',
@@ -112,3 +117,4 @@ export const unitMap: Record<Unit, string> = {
 
 export type ListItemInsert = z.infer<typeof listItemSchema>
 export type ListItemsFormValues = z.infer<typeof listItemsInsertSchema>
+export type ListItemEditValues = z.infer<typeof listItemEditSchema>

@@ -1,26 +1,28 @@
 import { FloatingBottomContent } from "@/components/screen-layout";
-import { navCallbackAtom } from "@/lib/atoms/addItemAtom";
-import { useAppForm, withForm } from "@/lib/form";
+import { addItemAtom } from "@/lib/atoms/add-item-atom";
+import { useAppForm } from "@/lib/form";
 import {
-  ItemWithUriArray, ListItemInsert, listItemSchema, ListItemsFormValues, listItemsInsertSchema, Unit,
-  unitMap,
+  listItemEditSchema,
+  ListItemEditValues,
+  ListItemInsert,
+  ListItemsFormValues, listItemsInsertSchema, Unit, unitMap
 } from "@/server/db/schema";
-import { ExpoRouter, router } from "expo-router";
-import { Card, cn, Dialog } from "heroui-native";
+import { router } from "expo-router";
+import { BottomSheet, Card, cn } from "heroui-native";
 import { Button } from "heroui-native/button";
 import { useAtom } from "jotai";
 import { PlusIcon, Trash2Icon } from "lucide-react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { GestureResponderEvent, Keyboard, Pressable, View } from "react-native";
-import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import ReorderableList, {
-  ReorderableListRenderItemInfo, ReorderableListReorderEvent, reorderItems, useIsActive, useReorderableDrag
+  ReorderableListRenderItemInfo, ReorderableListReorderEvent,
+  reorderItems, useIsActive, useReorderableDrag
 } from "react-native-reorderable-list";
 import { EmptyListIndicator } from "../empty-list-indicator";
 import { Icon } from "../icon";
 
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 function assignSortOrders(items: ListItemInsert[]): ListItemInsert[] {
   return items.map((item, index) => ({ ...item, sortOrder: index }))
 }
@@ -36,18 +38,16 @@ function DraggableRow({ item, onPress, onRemove }: RowProps) {
   const isActive = useIsActive()
 
   return (
-    // padding-bottom as gap, because gap causes weird overlapping in list container
+    // padding-bottom for correct height calculation when sorting by dragging
     <View className="pb-2 overflow-visible">
       <Card className={cn("flex-row gap-2 items-center", isActive && "opacity-80")} asChild>
         <Pressable onPress={onPress} onLongPress={drag}>
-
           <Card.Body className="flex-1">
             <Card.Title className="leading-tight">{item.item.name}</Card.Title>
             <Card.Description className="leading-snug">
               {item.quantity} {item.unit && unitMap[item.unit]}
             </Card.Description>
           </Card.Body>
-
           <Card.Footer className="justify-center">
             <Button variant="danger-soft" onPress={onRemove} className="h-10" isIconOnly>
               <Icon icon={Trash2Icon} className="text-danger-soft-foreground" />
@@ -56,6 +56,99 @@ function DraggableRow({ item, onPress, onRemove }: RowProps) {
         </Pressable>
       </Card>
     </View>
+  );
+}
+
+// ─── EditSheet ───────────────────────────────────────────────────────────────
+type EditSheetProps = {
+  isOpen: boolean
+  onOpenChange: (open: boolean) => void
+  editingItem: ListItemInsert | null
+  onSubmit: (values: ListItemEditValues) => void
+}
+function EditSheet({ isOpen, onOpenChange, editingItem, onSubmit }: EditSheetProps) {
+  const form = useAppForm({
+    defaultValues: {
+      quantity: editingItem?.quantity ?? null as unknown as number,
+      unit: editingItem?.unit ?? null as unknown as Unit,
+      notes: editingItem?.notes ?? null,
+    },
+    validators: {
+      onSubmit: listItemEditSchema,
+      onChange: listItemEditSchema,
+    },
+    onSubmit: ({ value }) => {
+      if (Keyboard.isVisible()) Keyboard.dismiss()
+      onSubmit(value)
+    },
+  })
+
+  // reset form when a new item is opened
+  useEffect(() => {
+    // TODO: quantity is not being set with reset
+    if (editingItem) {
+      // with reset
+      form.reset({
+        quantity: editingItem.quantity ?? null,
+        unit: editingItem.unit ?? null,
+        notes: editingItem.notes ?? null,
+      })
+
+      // with setters
+      // form.setFieldValue("quantity", editingItem.quantity)
+      // form.setFieldValue("unit", editingItem.unit)
+      // form.setFieldValue("notes", editingItem.notes)
+
+      //* both dont set number, ...
+    }
+  }, [editingItem])
+
+  return (
+    <BottomSheet isOpen={isOpen} onOpenChange={onOpenChange}>
+      <BottomSheet.Portal>
+        <BottomSheet.Overlay onPress={() => Keyboard.dismiss()} />
+        <BottomSheet.Content
+          contentContainerClassName="p-4 pt-0 gap-4"
+          keyboardBlurBehavior="restore"
+          enableBlurKeyboardOnGesture
+        >
+          <View className="gap-1">
+            <BottomSheet.Title className="leading-[1.2] pr-6 text-accent" numberOfLines={1}>
+              {editingItem?.item?.name}
+            </BottomSheet.Title>
+            <BottomSheet.Description className="leading-snug">
+              Passe hier die Menge und Einheit an
+            </BottomSheet.Description>
+          </View>
+
+          <View className="gap-4">
+            <View className="gap-3 flex-row">
+              <View className="flex-1">
+                <form.AppField
+                  name="quantity"
+                  children={(field) => <field.NumberField label="Menge *" />}
+                />
+              </View>
+              <View className="flex-1">
+                <form.AppField
+                  name="unit"
+                  children={(field) => <field.UnitField label="Einheit *" />}
+                />
+              </View>
+            </View>
+
+            <form.AppField
+              name="notes"
+              children={(field) => <field.TextField label="Notizen" multiline />}
+            />
+
+            <form.AppForm>
+              <form.SubmitButton label="Speichern" />
+            </form.AppForm>
+          </View>
+        </BottomSheet.Content>
+      </BottomSheet.Portal>
+    </BottomSheet>
   );
 }
 
@@ -68,8 +161,7 @@ export interface ListItemFormProps {
 export function ListItemsForm({ listId, list, onSubmit }: ListItemFormProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [editingItem, setEditingItem] = useState<ListItemInsert | null>(null)
-  const [isNewItem, setIsNewItem] = useState(false)
-  const [itemDraft, setItemDraft] = useState<ListItemInsert | null>(null)
+  const [addItemState, setAddItem] = useAtom(addItemAtom)
 
   const form = useAppForm({
     defaultValues: list,
@@ -83,221 +175,113 @@ export function ListItemsForm({ listId, list, onSubmit }: ListItemFormProps) {
     },
   })
 
-  // async return from other screen
-  const [_, setCallback] = useAtom(navCallbackAtom);
-  const pushAndWait = (path: ExpoRouter.__routes["href"]): Promise<ItemWithUriArray | null> => {
-    return new Promise((resolve) => {
-      setCallback(() => resolve)
-      router.push(path)
-    })
-  }
+  // react to item selected on add-list-item screen
+  useEffect(() => {
+    if (addItemState.status !== "selected") return
+    setAddItem({ status: "idle" })
 
-  const openEditDialog = (item: ListItemInsert) => {
-    setItemDraft(item)
+    const listItems = form.getFieldValue("listItems")
+    const listItem: ListItemInsert = {
+      item: addItemState.item,
+      sortOrder: listItems.length,
+      listId,
+      itemId: addItemState.item.id,
+      notes: null,
+      quantity: null as unknown as number,
+      unit: null as unknown as Unit,
+    }
+
+    setEditingItem(listItem)
+    setTimeout(() => setIsOpen(true), 250)
+  }, [addItemState])
+
+  const openEditSheet = (item: ListItemInsert) => {
     setEditingItem(item)
     setIsOpen(true)
   }
 
   return (
-    <form.AppField name="listItems" mode="array">
-      {(field) => (
-        <View className="flex-1 gap-4">
-          <View className="gap-2">
-            <View className="-mx-4">
-              <ReorderableList
-                data={field.state.value}
-                keyExtractor={(item, index) => `${index}-${item.id}`}
-                onReorder={({ from, to }: ReorderableListReorderEvent) => {
-                  const sorted = assignSortOrders(reorderItems(field.state.value, from, to));
-                  field.handleChange(sorted);
-                }}
-                renderItem={({ item, index }: ReorderableListRenderItemInfo<ListItemInsert>) => (
-                  <DraggableRow
-                    item={item}
-                    onPress={() => openEditDialog(item)}
-                    onRemove={() => {
-                      const next = assignSortOrders(field.state.value.filter((_, i) => i !== index));
-                      field.handleChange(next);
-                    }}
-                  />
-                )}
-                ListEmptyComponent={
-                  <EmptyListIndicator message="Diese Einkaufsliste hat noch keine Produkte" />
-                }
-                contentContainerClassName="pt-px px-4 pb-24 overflow-x-auto"
-                cellAnimations={{ overflow: "visible" }}
-              />
-            </View>
+    <View className="flex-1 gap-4">
+      <form.AppField name="listItems" mode="array">
+        {(field) => (
+          <View className="-mx-4">
+            <ReorderableList
+              data={field.state.value}
+              keyExtractor={(item, index) => `${index}-${item.id}`}
+              onReorder={({ from, to }: ReorderableListReorderEvent) => {
+                const sorted = assignSortOrders(reorderItems(field.state.value, from, to));
+                field.handleChange(sorted);
+              }}
+              renderItem={({ item, index }: ReorderableListRenderItemInfo<ListItemInsert>) => (
+                <DraggableRow
+                  item={item}
+                  onPress={() => openEditSheet(item)}
+                  onRemove={() => {
+                    const next = assignSortOrders(field.state.value.filter((_, i) => i !== index));
+                    field.handleChange(next);
+                  }}
+                />
+              )}
+              ListEmptyComponent={
+                <EmptyListIndicator message="Diese Einkaufsliste hat noch keine Produkte" />
+              }
+              contentContainerClassName="pt-px px-4 pb-24 overflow-x-auto gap-0"
+              cellAnimations={{ overflow: "visible" }}
+            />
+          </View>
+        )}
+      </form.AppField>
 
-            <Dialog
-              isOpen={isOpen}
-              onOpenChange={(open) => {
-                if (!open) {
-                  // edit dialog was dismissed...
-                  if (isNewItem) {
-                    // ... remove newly added item
-                    field.removeValue(editingItem!.sortOrder!)
-                  } else if (itemDraft !== null) {
-                    // ... restore latest draft
-                    field.replaceValue(editingItem!.sortOrder!, itemDraft)
-                  }
-                  setIsNewItem(false)
-                  setEditingItem(null)
-                  setItemDraft(null)
-                }
-                setIsOpen(open)
+      {/* dialog lives outside field render scope */}
+      <EditSheet
+        isOpen={isOpen}
+        onOpenChange={(open) => {
+          setIsOpen(open)
+          if (!open) setEditingItem(null)
+        }}
+        editingItem={editingItem}
+        onSubmit={(values) => {
+          // under normal circumstances editingItem has a sortOrder set
+          if (!editingItem || typeof editingItem.sortOrder === "undefined") return
+
+          const isNew = editingItem.sortOrder === form.getFieldValue("listItems").length
+
+          if (isNew) {
+            form.pushFieldValue("listItems",
+              { ...editingItem!, ...values }
+            )
+          } else {
+            form.replaceFieldValue("listItems", editingItem.sortOrder,
+              { ...editingItem!, ...values }
+            )
+          }
+          setIsOpen(false)
+          setEditingItem(null)
+        }}
+      />
+
+      <FloatingBottomContent className="via-background/80">
+        <View className="flex-row items-center justify-between gap-2 pb-4">
+          <View className="flex-1">
+            <Button
+              variant="tertiary"
+              className="pl-3"
+              onPress={() => {
+                setAddItem({ status: "pending" })
+                router.push("/list/[id]/edit/add-item")
               }}
             >
-              <Dialog.Portal>
-                <Dialog.Overlay />
-                <KeyboardAvoidingView behavior="padding" keyboardVerticalOffset={16}>
-                  <Dialog.Content
-                    className="gap-4"
-                    onStartShouldSetResponder={() => {
-                      if (Keyboard.isVisible()) {
-                        Keyboard.dismiss()
-                        return true
-                      }
-                      return false
-                    }}
-                  >
-                    <Dialog.Close variant="ghost" className="absolute top-1.5 right-1.5" />
-
-                    <View className="gap-1">
-                      <Dialog.Title
-                        className="leading-[1.2] pr-6 text-accent"
-                        numberOfLines={1}
-                      >
-                        {editingItem !== null && editingItem.item && `${editingItem.item.name}`}
-                      </Dialog.Title>
-                      <Dialog.Description className="leading-snug">
-                        Passe hier die Menge und Einheit an
-                      </Dialog.Description>
-                    </View>
-
-                    {editingItem !== null &&
-                      typeof editingItem.sortOrder !== "undefined" && (
-                        <ListItemEditFields
-                          form={form}
-                          index={editingItem.sortOrder}
-                          buttonLabel={isNewItem ? "Hinzufügen" : "Speichern"}
-                          onConfirm={() => {
-                            setItemDraft(null)
-                            setIsNewItem(false)
-                            setIsOpen(false)
-                          }}
-                        />
-                      )}
-                  </Dialog.Content>
-                </KeyboardAvoidingView>
-              </Dialog.Portal>
-            </Dialog>
+              <Icon icon={PlusIcon} />
+              <Button.Label>Hinzufügen</Button.Label>
+            </Button>
           </View>
-
-          <FloatingBottomContent className="via-background/80">
-            <View className="flex-row items-center justify-between gap-2 pb-4">
-
-              <View className="flex-1">
-                <Button
-                  variant="tertiary"
-                  className="pl-3"
-                  onPress={async () => {
-                    const item = await pushAndWait("/list/[id]/edit/add-item");
-                    if (item) {
-                      const listItem: ListItemInsert = {
-                        item,
-                        sortOrder: field.state.value.length,
-                        listId,
-                        itemId: item.id,
-                        notes: null,
-                        // initial value null, validation later ensures data is valid
-                        quantity: null as unknown as number,
-                        unit: null as unknown as Unit,
-                      }
-                      field.pushValue(listItem)
-                      setEditingItem(listItem)
-                      setIsNewItem(true)
-                      //* add litte delay because of screen back transition
-                      setTimeout(() => setIsOpen(true), 250)
-                    }
-                  }}
-                >
-                  <Icon icon={PlusIcon} />
-                  <Button.Label>Hinzufügen</Button.Label>
-                </Button>
-              </View>
-
-              <View className="flex-1">
-                <form.AppForm>
-                  <form.SubmitButton label="Speichern" />
-                </form.AppForm>
-              </View>
-
-            </View>
-          </FloatingBottomContent>
+          <View className="flex-1">
+            <form.AppForm>
+              <form.SubmitButton label="Speichern" />
+            </form.AppForm>
+          </View>
         </View>
-      )}
-    </form.AppField>
+      </FloatingBottomContent>
+    </View>
   );
 }
-
-// ─── ListItemEditFields ───────────────────────────────────────────────────────
-const ListItemEditFields = withForm({
-  defaultValues: { listItems: [] } as ListItemsFormValues,
-  validators: {
-    onChange: listItemsInsertSchema,
-  },
-  props: {
-    index: 0 as number,
-    buttonLabel: "" as string,
-    onConfirm: () => { },
-  },
-  render: function Render({ form, index, buttonLabel, onConfirm }) {
-    return (
-      <View className="gap-4">
-        <View className="gap-3 flex-row">
-          <View className="flex-1">
-            <form.AppField
-              name={`listItems[${index}].quantity`}
-              children={(field) => <field.NumberField label="Menge *" />}
-            />
-          </View>
-          <View className="flex-1">
-            <form.AppField
-              name={`listItems[${index}].unit`}
-              children={(field) => <field.UnitField label="Einheit *" />}
-            />
-          </View>
-        </View>
-
-        <form.AppField
-          name={`listItems[${index}].notes`}
-          children={(field) => <field.TextField label="Notizen" />}
-        />
-
-        <form.Subscribe
-          selector={(state) => ({
-            quantity: state.values.listItems[index]?.quantity,
-            unit: state.values.listItems[index]?.unit,
-          })}
-        >
-          {({ quantity, unit }) => {
-            const { success: isUnitValid } = listItemSchema.shape.unit.safeParse(unit)
-            const { success: isQuantityValid } = listItemSchema.shape.quantity.safeParse(quantity)
-            const isValid = isUnitValid && isQuantityValid
-
-            return (
-              <Button
-                variant="secondary"
-                onPress={onConfirm}
-                isDisabled={!isValid}
-              >
-                <Button.Label>{buttonLabel}</Button.Label>
-              </Button>
-            );
-          }}
-        </form.Subscribe>
-      </View>
-    );
-  },
-})

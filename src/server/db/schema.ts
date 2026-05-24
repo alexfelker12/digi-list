@@ -21,7 +21,7 @@ export const items = sqliteTable('item', {
   index('items_name_idx').on(t.name),
 ]);
 
-// Items sind zunächst listenunabhängig — Zuordnung über list_items
+// item reference to list with context
 export const listItems = sqliteTable('list_item', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   listId: integer('list_id').notNull().references(() => lists.id, { onDelete: 'cascade' }),
@@ -59,11 +59,9 @@ export const stringifyImageUris = (uris: string[]): string => JSON.stringify(uri
 
 //* item schema and types
 export const itemInsertSchema = createInsertSchema(items, {
-  // Felder überschreiben oder mit Validierung versehen
   name: z.string()
     .min(1, "Bitte Name des Produkts angeben")
     .max(100, "Nicht mehr als 100 Zeichen erlaubt"),
-  // imageUris als Array statt String — wir parsen es im Formular
   imageUris: z.array(z.string()).optional(),
 });
 

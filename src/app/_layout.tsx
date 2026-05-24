@@ -1,12 +1,14 @@
 import '@/global.css';
 
+import { useEffect } from "react";
+
 import { cleanupOrphanedImagesIfNeeded } from "@/lib/utils";
 import { db } from "@/server/db";
 import migrations from '@/server/db/migrations/migrations';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
+import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 import { SQLiteProvider } from 'expo-sqlite';
-import { useEffect } from "react";
 
 import { HeroUINativeProvider } from 'heroui-native/provider';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
@@ -37,6 +39,8 @@ function MigrationsGuard({ children }: { children: React.ReactNode }) {
 
 const queryClient = new QueryClient();
 export default function RootLayout() {
+  useDrizzleStudio(db.$client)
+
   return (
     <QueryClientProvider client={queryClient}>
       <SQLiteProvider databaseName="digi-list.db">

@@ -1,51 +1,52 @@
 import { useFieldContext } from "@/lib/form/form-context";
-import { getDisplayUri, saveImageToAppStorage } from '@/lib/utils';
+import { getDisplayUri } from "@/lib/utils";
 import { Image } from "expo-image";
-import { launchCameraAsync, launchImageLibraryAsync, requestCameraPermissionsAsync, requestMediaLibraryPermissionsAsync } from 'expo-image-picker';
+import { launchCameraAsync, launchImageLibraryAsync, requestCameraPermissionsAsync, requestMediaLibraryPermissionsAsync } from "expo-image-picker";
 import { Button, CloseButton, Label, TextField } from "heroui-native";
 import { CameraIcon, ImagesIcon, XIcon } from "lucide-react-native";
 import { useState } from "react";
-import { Alert, Pressable, View } from 'react-native';
+import { Alert, Pressable, View } from "react-native";
 import { Icon } from "../icon";
 import { ImageViewerModal } from "../image/image-viewer-modal";
 import { Text } from "../text";
 
 
+// TODO: save image from gallery to app storage
+// TODO: save images only when submitting item form
+// TODO:? additionally save assetId to block duplicate images saves
 export function ImageFieldComponent() {
-  const field = useFieldContext<string[]>();
-  const uris = field.state.value ?? [];
+  const field = useFieldContext<string[]>()
+  const uris = field.state.value ?? []
   // image viewer
   const [viewerVisible, setViewerVisible] = useState(false)
   const [viewerIndex, setViewerIndex] = useState(0)
 
   async function pickFromGallery() {
-    const { status } = await requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Berechtigung fehlt', 'Galerie-Zugriff wurde nicht erlaubt.');
-      return;
+    const { status } = await requestMediaLibraryPermissionsAsync()
+    if (status !== "granted") {
+      Alert.alert("Berechtigung fehlt", "Galerie-Zugriff wurde nicht erlaubt.")
+      return
     }
     const result = await launchImageLibraryAsync({
       mediaTypes: ["images"],
       allowsMultipleSelection: true,
       quality: 0.8,
-    });
+    })
     if (!result.canceled) {
-      // Galerie → vollständiger URI, nicht von uns verwaltet
-      field.handleChange([...uris, ...result.assets.map((a) => a.uri)]);
+      // gallery uri
+      field.handleChange([...uris, ...result.assets.map((a) => a.uri)])
     }
   }
 
   async function pickFromCamera() {
     const { status } = await requestCameraPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Berechtigung fehlt', 'Kamera-Zugriff wurde nicht erlaubt.');
-      return;
+    if (status !== "granted") {
+      Alert.alert("Berechtigung fehlt", "Kamera-Zugriff wurde nicht erlaubt.")
+      return
     }
-    const result = await launchCameraAsync({ quality: 0.8 });
+    const result = await launchCameraAsync({ quality: 0.8 })
     if (!result.canceled) {
-      // Kamera → in App-Storage kopieren, nur Dateiname speichern
-      const filename = await saveImageToAppStorage(result.assets[0].uri);
-      field.handleChange([...uris, filename]);
+      field.handleChange([...uris, result.assets[0].uri])
     }
   }
 

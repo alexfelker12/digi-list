@@ -21,6 +21,7 @@ export default function ProductsListScreen() {
     <ScreenLayout title="Produkte" className="pb-0">
 
       <View className="flex-row items-center justify-between">
+
         <Text className="text-muted italic">
           {data ? (data.length || "Keine") : 0} {data?.length === 1 ? "Produkt" : "Produkte"}
         </Text>
@@ -30,8 +31,8 @@ export default function ProductsListScreen() {
           <Button.Label>Erstellen</Button.Label>
         </Button>
 
-
       </View>
+
       <ItemFormSheet
         isOpen={isOpen}
         onOpenChange={setIsOpen}

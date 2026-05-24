@@ -1,12 +1,9 @@
 import { FloatingBottomContent } from "@/components/screen-layout";
 import { addItemAtom } from "@/lib/atoms/add-item-atom";
 import { useAppForm } from "@/lib/form";
-import {
-  listItemEditSchema,
-  ListItemEditValues,
-  ListItemInsert,
-  ListItemsFormValues, listItemsInsertSchema, Unit, unitMap
-} from "@/server/db/schema";
+import { getDisplayUri } from "@/lib/utils";
+import { listItemEditSchema, ListItemEditValues, ListItemInsert, ListItemsFormValues, listItemsInsertSchema, Unit, unitMap } from "@/server/db/schema";
+import { Image } from "expo-image";
 import { router } from "expo-router";
 import { BottomSheet, Card, cn } from "heroui-native";
 import { Button } from "heroui-native/button";
@@ -20,6 +17,8 @@ import ReorderableList, {
 } from "react-native-reorderable-list";
 import { EmptyListIndicator } from "../empty-list-indicator";
 import { Icon } from "../icon";
+import { ImagePlaceholder } from "../image/image-placeholder";
+import { ImageViewerModal } from "../image/image-viewer-modal";
 
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -33,26 +32,58 @@ type RowProps = {
   onPress: (event: GestureResponderEvent) => void
   onRemove: () => void
 }
-function DraggableRow({ item, onPress, onRemove }: RowProps) {
+function DraggableRow({ item: listItem, onPress, onRemove }: RowProps) {
+  const { item, quantity, unit } = listItem
+  const [viewerVisible, setViewerVisible] = useState(false)
+
   const drag = useReorderableDrag()
   const isActive = useIsActive()
+  const hasImageUris = item.imageUris && item.imageUris.length > 0
 
   return (
     // padding-bottom for correct height calculation when sorting by dragging
     <View className="pb-2 overflow-visible">
       <Card className={cn("flex-row gap-2 items-center", isActive && "opacity-80")} asChild>
-        <Pressable onPress={onPress} onLongPress={drag}>
+        <Pressable onPress={onPress} onLongPress={drag} delayLongPress={350}>
+          <Card.Header className="h-10 aspect-square">
+            {hasImageUris ? (
+              <Pressable
+                onPress={() => setViewerVisible(true)}
+                className="size-full"
+              >
+                <Image
+                  source={{ uri: getDisplayUri(item.imageUris?.[0] ?? "") }}
+                  style={{ flex: 1, borderRadius: 8 }}
+                  contentFit="cover"
+                  contentPosition="center"
+                  transition={50}
+                />
+              </Pressable>
+            ) : (
+              <ImagePlaceholder />
+            )}
+
+            {/* fullscreen image viewer */}
+            {hasImageUris && viewerVisible && <ImageViewerModal
+              uris={item.imageUris ?? []}
+              visible={viewerVisible}
+              onClose={() => setViewerVisible(false)}
+            />}
+          </Card.Header>
+
           <Card.Body className="flex-1">
-            <Card.Title className="leading-tight">{item.item.name}</Card.Title>
+            <Card.Title className="leading-tight">{item.name}</Card.Title>
             <Card.Description className="leading-snug">
-              {item.quantity} {item.unit && unitMap[item.unit]}
+              {quantity} {unit && unitMap[unit]}
             </Card.Description>
           </Card.Body>
+
           <Card.Footer className="justify-center">
             <Button variant="danger-soft" onPress={onRemove} className="h-10" isIconOnly>
               <Icon icon={Trash2Icon} className="text-danger-soft-foreground" />
             </Button>
           </Card.Footer>
+
         </Pressable>
       </Card>
     </View>
@@ -85,21 +116,12 @@ function EditSheet({ isOpen, onOpenChange, editingItem, onSubmit }: EditSheetPro
 
   // reset form when a new item is opened
   useEffect(() => {
-    // TODO: quantity is not being set with reset
     if (editingItem) {
-      // with reset
       form.reset({
         quantity: editingItem.quantity ?? null,
         unit: editingItem.unit ?? null,
         notes: editingItem.notes ?? null,
       })
-
-      // with setters
-      // form.setFieldValue("quantity", editingItem.quantity)
-      // form.setFieldValue("unit", editingItem.unit)
-      // form.setFieldValue("notes", editingItem.notes)
-
-      //* both dont set number, ...
     }
   }, [editingItem])
 
@@ -181,17 +203,24 @@ export function ListItemsForm({ listId, list, onSubmit }: ListItemFormProps) {
     setAddItem({ status: "idle" })
 
     const listItems = form.getFieldValue("listItems")
-    const listItem: ListItemInsert = {
-      item: addItemState.item,
-      sortOrder: listItems.length,
-      listId,
-      itemId: addItemState.item.id,
-      notes: null,
-      quantity: null as unknown as number,
-      unit: null as unknown as Unit,
+    const existingListItem = listItems.find((listItem) => listItem.item.id === addItemState.item.id)
+
+    if (existingListItem) {
+      // if selecting item which already is in list, set it as editingItem to open its edit form
+      setEditingItem(existingListItem)
+    } else {
+      // else create a new list item
+      setEditingItem({
+        item: addItemState.item,
+        sortOrder: listItems.length,
+        listId,
+        itemId: addItemState.item.id,
+        notes: null,
+        quantity: null as unknown as number,
+        unit: null as unknown as Unit,
+      })
     }
 
-    setEditingItem(listItem)
     setTimeout(() => setIsOpen(true), 250)
   }, [addItemState])
 
@@ -207,7 +236,7 @@ export function ListItemsForm({ listId, list, onSubmit }: ListItemFormProps) {
           <View className="-mx-4">
             <ReorderableList
               data={field.state.value}
-              keyExtractor={(item, index) => `${index}-${item.id}`}
+              keyExtractor={(listItem) => String(listItem.item.id)}
               onReorder={({ from, to }: ReorderableListReorderEvent) => {
                 const sorted = assignSortOrders(reorderItems(field.state.value, from, to));
                 field.handleChange(sorted);
@@ -232,7 +261,7 @@ export function ListItemsForm({ listId, list, onSubmit }: ListItemFormProps) {
         )}
       </form.AppField>
 
-      {/* dialog lives outside field render scope */}
+      {/* bottom-sheet lives outside field render scope */}
       <EditSheet
         isOpen={isOpen}
         onOpenChange={(open) => {

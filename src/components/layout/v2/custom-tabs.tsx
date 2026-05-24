@@ -59,7 +59,7 @@ export function CustomTabsLayout() {
       </View>
 
       {/* bottom navbar bg */}
-      <View className="pb-safe bg-white/90 dark:bg-black/90" />
+      <View className="pb-safe bg-white/80 dark:bg-black/85" />
 
     </CustomTabs>
   );

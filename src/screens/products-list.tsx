@@ -1,8 +1,10 @@
 import { Icon } from "@/components/icon";
 import { ItemFormSheet } from "@/components/items/item-form-sheet";
 import { ProductsListing } from "@/components/items/product-listing";
+import { SearchItemField } from "@/components/items/search-item-field";
 import { ScreenLayout } from "@/components/screen-layout";
 import { Text } from "@/components/text";
+import { useSearchItemState } from "@/hooks/use-search-item";
 import { allItemsQueryOptions, createItemMutationOptions } from "@/lib/queries/item-queries";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button, Separator } from "heroui-native";
@@ -15,6 +17,7 @@ export default function ProductsListScreen() {
   const [isOpen, setIsOpen] = useState(false)
 
   const { data, isPending } = useQuery(allItemsQueryOptions())
+  const { filtered, search, setSearch } = useSearchItemState(data)
   const { mutateAsync: createItem } = useMutation(createItemMutationOptions())
 
   return (
@@ -23,7 +26,7 @@ export default function ProductsListScreen() {
       <View className="flex-row items-center justify-between">
 
         <Text className="text-muted italic">
-          {data ? (data.length || "Keine") : 0} {data?.length === 1 ? "Produkt" : "Produkte"}
+          {filtered ? (filtered.length || "Keine") : 0} {filtered?.length === 1 ? "Produkt" : "Produkte"}
         </Text>
 
         <Button variant="secondary" className="h-10" onPress={() => setIsOpen(true)}>
@@ -42,11 +45,19 @@ export default function ProductsListScreen() {
       />
       <Separator />
 
-      <ProductsListing
-        data={data}
-        isPending={isPending}
-        className="pb-4"
-      />
+      <View className="flex-1 gap-3 -mt-1 overflow-visible">
+        <SearchItemField
+          search={search}
+          setSearch={setSearch}
+        />
+
+        <ProductsListing
+          data={filtered}
+          searchValue={search}
+          isPending={isPending}
+          className="pb-4"
+        />
+      </View>
 
     </ScreenLayout>
   );

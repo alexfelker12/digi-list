@@ -1,6 +1,8 @@
 import { ItemForm } from "@/components/items/item-form";
 import { ProductsListing } from "@/components/items/product-listing";
+import { SearchItemField } from "@/components/items/search-item-field";
 import { ScreenLayout } from "@/components/screen-layout";
+import { useSearchItemState } from "@/hooks/use-search-item";
 import { useSelectItem } from "@/hooks/use-select-item";
 import { parseItem } from "@/lib/queries/_helper";
 import { allItemsQueryOptions, createItemMutationOptions } from "@/lib/queries/item-queries";
@@ -14,6 +16,7 @@ export default function AddListItemScreen() {
 
   const handleSelect = useSelectItem()
   const { data, isPending } = useQuery(allItemsQueryOptions())
+  const { filtered, search, setSearch } = useSearchItemState(data)
 
   const { onSuccess, ...mutationOptions } = createItemMutationOptions()
   const { mutateAsync } = useMutation({
@@ -43,9 +46,15 @@ export default function AddListItemScreen() {
           </Tabs.Trigger>
         </Tabs.List>
 
-        <Tabs.Content value="existing" className="flex-1">
+        <Tabs.Content value="existing" className="flex-1 gap-3">
+          <SearchItemField
+            search={search}
+            setSearch={setSearch}
+            className="mt-1"
+          />
           <ProductsListing
-            data={data}
+            data={filtered}
+            searchValue={search}
             isPending={isPending}
             onPress={(item) => handleSelect(item)}
           />

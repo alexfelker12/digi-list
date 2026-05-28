@@ -8,12 +8,14 @@ import { useCallback, useState } from "react";
 import { ActivityIndicator, FlatList, GestureResponderEvent, ListRenderItem, View } from "react-native";
 import { DeleteDialog } from "../delete-dialog";
 import { Icon } from "../icon";
+import { Text } from "../text";
 import { ItemFormSheet } from "./item-form-sheet";
 import { ProductItem } from "./product-item";
 
 
 type ProductsListingProps = {
   data: ItemWithUriArray[] | undefined
+  searchValue?: string
   isPending?: boolean
   className?: string
   onPress?: (
@@ -21,7 +23,7 @@ type ProductsListingProps = {
     event: GestureResponderEvent
   ) => void
 }
-export function ProductsListing({ data, isPending, className, onPress }: ProductsListingProps) {
+export function ProductsListing({ data, searchValue, isPending, className, onPress }: ProductsListingProps) {
   // open state edit/delete context
   const [selectedItem, setSelectedItem] = useState<ItemWithUriArray | undefined>(undefined)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -37,7 +39,7 @@ export function ProductsListing({ data, isPending, className, onPress }: Product
   const { mutateAsync: updateItem } = useMutation(updateItemMutationOptions())
   const { mutateAsync: deleteItem, isPending: deletePending } = useMutation(deleteItemMutationOptions())
 
-  // flashlist
+  // flatlist
   const renderItem = useCallback<ListRenderItem<ItemWithUriArray>>(
     ({ item }) => <ProductItem item={item} onPress={onPress} openMenu={handleOpenMenu} />,
     [onPress]
@@ -58,7 +60,15 @@ export function ProductsListing({ data, isPending, className, onPress }: Product
         ListEmptyComponent={isPending ? (
           <ActivityIndicator size="large" className="text-accent" />
         ) : (
-          <EmptyListIndicator message="Noch keine Produkte erstellt" />
+          !!searchValue ? (
+            <View className="flex-1 justify-center items-center flex-row p-4">
+              <Text className="text-muted italic">keine Produkte für </Text>
+              <Text className="font-semibold">"{searchValue}" </Text>
+              <Text className="text-muted italic">gefunden</Text>
+            </View>
+          ) : (
+            <EmptyListIndicator message="Noch keine Produkte erstellt" />
+          )
         )}
         contentContainerClassName={cn("gap-2 px-1 pb-1", className)}
       />

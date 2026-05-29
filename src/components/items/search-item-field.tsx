@@ -16,7 +16,7 @@ export function SearchItemField({ search, setSearch, className, ...props }: Sear
     >
       <SearchField.Group>
         <SearchField.SearchIcon />
-        <SearchField.Input placeholder="Produkt suchen..." variant="secondary" />
+        <SearchField.Input placeholder="Produkt suchen..." variant="primary" />
         <SearchField.ClearButton />
       </SearchField.Group>
     </SearchField>

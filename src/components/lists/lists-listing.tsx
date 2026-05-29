@@ -6,7 +6,7 @@ import { router } from "expo-router";
 import { cn, Menu, Separator } from "heroui-native";
 import { NotebookPenIcon, PencilIcon, Trash2Icon } from "lucide-react-native";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, FlatList, ListRenderItem, View } from "react-native";
+import { ActivityIndicator, FlatList, GestureResponderEvent, ListRenderItem, View } from "react-native";
 import { DeleteDialog } from "../delete-dialog";
 import { Icon } from "../icon";
 import { List } from "./list";
@@ -17,9 +17,9 @@ type ListsListingProps = {
   data: ListWithItemCount[] | undefined
   isPending?: boolean
   className?: string
-  // onPress?: (list: ListWithItemCount, event: GestureResponderEvent) => void
+  onPress?: (list: ListWithItemCount, event: GestureResponderEvent) => void
 }
-export function ListsListing({ data, isPending, className }: ListsListingProps) {
+export function ListsListing({ data, isPending, className, onPress }: ListsListingProps) {
   // open state edit/delete context
   const [selectedList, setSelectedList] = useState<ListWithItemCount | undefined>(undefined)
   const [menuOpen, setMenuOpen] = useState(false)
@@ -44,7 +44,17 @@ export function ListsListing({ data, isPending, className }: ListsListingProps) 
 
   // flatlist
   const renderItem = useCallback<ListRenderItem<ListWithItemCount>>(
-    ({ item: list }) => <List list={list} onPress={() => navigateToRun(list)} openMenu={handleOpenMenu} />,
+    ({ item: list }) => <List
+      list={list}
+      onPress={(...args) => {
+        if (onPress) {
+          onPress(...args)
+        } else {
+          navigateToRun(list)
+        }
+      }}
+      openMenu={handleOpenMenu}
+    />,
     []
   )
   const keyExtractor = useCallback(
@@ -114,7 +124,7 @@ export function ListsListing({ data, isPending, className }: ListsListingProps) 
                 <Icon icon={NotebookPenIcon} className="text-muted" size={16} />
               </View>
               <View className="flex-1">
-                <Menu.ItemTitle>Produkte bearbeiten</Menu.ItemTitle>
+                <Menu.ItemTitle>Produkte hinzufügen</Menu.ItemTitle>
                 <Menu.ItemDescription numberOfLines={1}>
                   Passe Produkte und ihre Reihenfolge an
                 </Menu.ItemDescription>

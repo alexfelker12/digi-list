@@ -5,7 +5,7 @@ import { Separator } from "heroui-native/separator";
 import { View } from 'react-native';
 
 
-const defaultValues: ListFormValues = { name: "Einkauf" };
+const defaultValues: ListFormValues = { name: "" };
 
 export interface ListFormProps {
   list?: ListFormValues;

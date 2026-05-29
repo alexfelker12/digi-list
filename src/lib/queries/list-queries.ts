@@ -23,6 +23,7 @@ export const allListsQueryOptions = () => queryOptions({
 
     return rows
   },
+  staleTime: 10 * 60 * 1000
 })
 
 export const createListMutationOptions = () => mutationOptions({

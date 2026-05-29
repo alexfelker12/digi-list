@@ -1,78 +1,94 @@
-import { encodePayload, SERVICE_TYPE, TRANSFER_PORT, type TransferPayload } from '@/lib/tcp-transfer';
-import { db, items, lists, parseImageUris } from '@/server/db';
-import { eq } from 'drizzle-orm';
-import { useCallback, useState } from 'react';
-import TcpSocket from 'react-native-tcp-socket';
-import Zeroconf from 'react-native-zeroconf';
+import { encodePayload, SERVICE_NAME, SERVICE_TYPE, TRANSFER_PORT } from "@/lib/transfer/tcp-transfer";
+import { getListTransferData } from "@/server/functions/get-list-transfer-data";
+import { useCallback, useState } from "react";
+import TcpSocket from "react-native-tcp-socket";
+import Zeroconf from "react-native-zeroconf";
 
 
 type SendStatus =
-  | { state: 'idle' }
-  | { state: 'waiting' }          // Server läuft, wartet auf Gast
-  | { state: 'sending' }          // Überträgt Daten
-  | { state: 'success' }
-  | { state: 'error'; reason: string };
-
+  | { state: "idle" }
+  | { state: "discovering" }      // scanning mdns for a receiver
+  | { state: "sending" }          // transferring data
+  | { state: "success" }
+  | { state: "error"; reason: string }
 export function useSendList() {
-  const [status, setStatus] = useState<SendStatus>({ state: 'idle' });
+  const [status, setStatus] = useState<SendStatus>({ state: "idle" })
 
   const send = useCallback(async (listId: number) => {
-    setStatus({ state: 'waiting' });
-    const zeroconf = new Zeroconf();
+    console.log("[send] loading list data for id:", listId)
+    const transferableList = await getListTransferData(listId)
 
-    // 1. Liste + Items aus DB laden
-    const [list] = await db.select().from(lists).where(eq(lists.id, listId));
-    if (!list) {
-      setStatus({ state: 'error', reason: 'Liste nicht gefunden' });
-      return;
+    if (!transferableList) {
+      console.log("[send] list not found in db")
+      setStatus({ state: "error", reason: "Liste nicht gefunden" })
+      return
     }
 
-    const dbItems = await db.select().from(items)
-      .where(eq(items.listId, listId))
-      .orderBy(items.sortOrder);
+    console.log("[send] list loaded:", transferableList.name)
+    const encoded = encodePayload(transferableList)
+    console.log("[send] encoded payload size:", encoded.length, "bytes")
 
-    const payload: TransferPayload = {
-      listName: list.name,
-      items: dbItems.map(i => ({
-        name: i.name,
-        quantity: i.quantity ?? null,
-        unit: i.unit ?? null,
-        description: i.description ?? null,
-        notes: i.notes ?? null,
-        imageUris: parseImageUris(i.imageUris),
-        altName: i.altName ?? null,
-        altNotes: i.altNotes ?? null,
-        sortOrder: i.sortOrder,
-      })),
-    };
+    console.log("[send] starting mdns scan for receiver")
+    setStatus({ state: "discovering" })
 
-    const encoded = encodePayload(payload);
+    const zeroconf = new Zeroconf()
 
-    // 2. TCP-Server starten & per mDNS ankündigen
-    const server = TcpSocket.createServer((socket) => {
-      setStatus({ state: 'sending' });
-      socket.write(encoded);
-      socket.on('data', () => { }); // drain
-      socket.on('close', () => {
-        setStatus({ state: 'success' });
-        server.close();
-        zeroconf.unpublishService(SERVICE_TYPE);
-      });
-    });
+    const timeout = setTimeout(() => {
+      console.log("[send] discovery timeout, no receiver found")
+      zeroconf.stop()
+      zeroconf.removeDeviceListeners()
+      setStatus({ state: "error", reason: "Kein Empfänger gefunden (Timeout)" })
+    }, 10_000)
 
-    server.on('error', (err) => {
-      setStatus({ state: 'error', reason: err.message });
-      zeroconf.unpublishService(SERVICE_TYPE);
-    });
+    zeroconf.on("resolved", (service) => {
+      console.log("[send] resolved mdns service:", service.name, "addresses:", service.addresses)
 
-    server.listen({ port: TRANSFER_PORT, host: '0.0.0.0' }, () => {
-      zeroconf.publishService(SERVICE_TYPE, 'tcp', 'local.', SERVICE_TYPE, TRANSFER_PORT);
-    });
-  }, []);
+      if (service.name !== SERVICE_NAME) {
+        console.log("[send] ignoring unrelated service:", service.name)
+        return
+      }
+
+      clearTimeout(timeout)
+      zeroconf.stop()
+      zeroconf.removeDeviceListeners()
+      console.log("[send] mdns scan stopped")
+
+      const host = service.addresses[0]
+      console.log(`[send] connecting to receiver at ${host}:${TRANSFER_PORT}`)
+      setStatus({ state: "sending" })
+
+      const socket = TcpSocket.createConnection({ port: TRANSFER_PORT, host }, () => {
+        console.log("[send] connected, writing data...")
+        socket.write(encoded)
+        console.log("[send] data written, closing socket")
+        socket.destroy()
+      })
+
+      socket.on("close", () => {
+        console.log("[send] socket closed, transfer complete")
+        setStatus({ state: "success" })
+      })
+
+      socket.on("error", (err) => {
+        console.log("[send] socket error:", err.message)
+        setStatus({ state: "error", reason: err.message })
+      })
+    })
+
+    zeroconf.on("error", (err) => {
+      console.log("[send] zeroconf error:", err.message)
+      clearTimeout(timeout)
+      setStatus({ state: "error", reason: err.message })
+    })
+
+    zeroconf.scan(SERVICE_TYPE, "tcp", "local.")
+    console.log("[send] mdns scan started, service type:", SERVICE_TYPE)
+  }, [])
 
   const cancel = useCallback(() => {
-    setStatus({ state: 'idle' });
-  }, []);
+    console.log("[send] cancelled")
+    setStatus({ state: "idle" })
+  }, [])
 
-  return { status, send, cancel };
+  return { status, send, cancel }
 }

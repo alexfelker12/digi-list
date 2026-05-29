@@ -1,109 +1,128 @@
-import { decodePayload, SERVICE_TYPE, TRANSFER_PORT } from '@/lib/tcp-transfer';
-import { db, items, lists, stringifyImageUris } from '@/server/db';
-import { useCallback, useState } from 'react';
-import TcpSocket from 'react-native-tcp-socket';
-import Zeroconf from 'react-native-zeroconf';
+import { queryKeys } from "@/lib/queries/_helper";
+import { decodePayload, SERVICE_NAME, SERVICE_TYPE, TRANSFER_PORT } from "@/lib/transfer/tcp-transfer";
+import { saveTransferedList } from "@/server/functions/save-transfered-list";
+import { useQueryClient } from "@tanstack/react-query";
+import { Buffer } from "buffer";
+import { useCallback, useState } from "react";
+import TcpSocket from "react-native-tcp-socket";
+import Zeroconf from "react-native-zeroconf";
 
+// module-level singletons - survive hook re-mounts
+let globalServer: ReturnType<typeof TcpSocket.createServer> | null = null
+let globalZeroconf: Zeroconf | null = null
+
+function cleanupGlobal() {
+  console.log("[receive] running global cleanup")
+  if (globalServer) {
+    console.log("[receive] closing global tcp server, server exists:", !!globalServer)
+    globalServer.close(() => {
+      console.log("[receive] server close callback fired")
+    })
+    globalServer = null
+  } else {
+    console.log("[receive] no global server to close")
+  }
+  if (globalZeroconf) {
+    console.log("[receive] unpublishing global mdns service")
+    globalZeroconf.unpublishService(SERVICE_NAME)
+    globalZeroconf = null
+  }
+}
 
 type ReceiveStatus =
-  | { state: 'idle' }
-  | { state: 'discovering' }      // mDNS sucht Host
-  | { state: 'receiving' }        // Daten kommen rein
-  | { state: 'saving' }           // In SQLite schreiben
-  | { state: 'success'; listId: number; listName: string }
-  | { state: 'error'; reason: string; retryable: boolean };
+  | { state: "idle" }
+  | { state: "advertising" }
+  | { state: "receiving" }
+  | { state: "saving" }
+  | { state: "success"; listId: number; listName: string }
+  | { state: "error"; reason: string; retryable: boolean }
 
 export function useReceiveList() {
-  const [status, setStatus] = useState<ReceiveStatus>({ state: 'idle' });
+  const [status, setStatus] = useState<ReceiveStatus>({ state: "idle" })
+  const qc = useQueryClient()
 
   const receive = useCallback(() => {
-    setStatus({ state: 'discovering' });
-    const zeroconf = new Zeroconf();
-    let chunks = Buffer.alloc(0);
+    console.log("[receive] starting - cleaning up any previous session first")
+    cleanupGlobal()
 
-    // Discovery-Timeout
-    const timeout = setTimeout(() => {
-      zeroconf.stop();
-      zeroconf.removeDeviceListeners();
-      setStatus({ state: 'error', reason: 'Kein Host gefunden (Timeout)', retryable: true });
-    }, 10_000);
+    setStatus({ state: "advertising" })
 
-    zeroconf.on('resolved', (service) => {
-      if (service.name !== SERVICE_TYPE) return;
-      clearTimeout(timeout);
-      zeroconf.stop();
-      zeroconf.removeDeviceListeners();
+    const zeroconf = new Zeroconf()
+    globalZeroconf = zeroconf
+    let chunks = Buffer.alloc(0)
 
-      const host = service.addresses[0];
-      setStatus({ state: 'receiving' });
+    const server = TcpSocket.createServer((socket) => {
+      console.log("[receive] sender connected:", socket.remoteAddress)
+      setStatus({ state: "receiving" })
 
-      const socket = TcpSocket.createConnection({ port: TRANSFER_PORT, host }, () => { });
+      socket.on("data", (data) => {
+        const chunk = Buffer.from(data) // force real Buffer
+        console.log(`[receive] got chunk: ${chunk.length} bytes`)
+        chunks = Buffer.concat([chunks, chunk])
+      })
 
-      socket.on('data', (data) => {
-        chunks = Buffer.concat([chunks, typeof data === 'string' ? Buffer.from(data) : data]);
-      });
+      socket.on("close", async () => {
+        console.log(`[receive] connection closed, total bytes: ${chunks.length}`)
+        cleanupGlobal()
+        setStatus({ state: "saving" })
 
-      socket.on('close', async () => {
-        setStatus({ state: 'saving' });
-        const payload = decodePayload(chunks);
+        console.log("[receive] first 4 bytes:", Array.from(chunks.slice(0, 4)))
+        console.log("[receive] Buffer.isBuffer:", Buffer.isBuffer(chunks))
+        console.log(chunks)
+        const payload = decodePayload(chunks)
+        console.log(payload)
 
         if (!payload) {
-          setStatus({ state: 'error', reason: 'Daten konnten nicht gelesen werden', retryable: true });
-          return;
+          console.log("[receive] failed to decode payload")
+          setStatus({ state: "error", reason: "Daten konnten nicht gelesen werden", retryable: true })
+          return
         }
 
-        try {
-          // In Transaktion speichern
-          let newListId!: number;
+        console.log("[receive] decoded payload, list name:", payload.name)
+        const newList = await saveTransferedList(payload)
 
-          await db.transaction(async (tx) => {
-            const [inserted] = await tx.insert(lists)
-              .values({ name: payload.listName })
-              .returning();
-
-            newListId = inserted.id;
-
-            await tx.insert(items).values(
-              payload.items.map((item, idx) => ({
-                listId: newListId,
-                name: item.name,
-                quantity: item.quantity ?? undefined,
-                unit: (item.unit as any) ?? undefined,
-                description: item.description ?? undefined,
-                notes: item.notes ?? undefined,
-                imageUris: stringifyImageUris(item.imageUris),
-                altName: item.altName ?? undefined,
-                altNotes: item.altNotes ?? undefined,
-                sortOrder: item.sortOrder ?? idx,
-                checked: false,
-              }))
-            );
-          });
-
-          setStatus({ state: 'success', listId: newListId, listName: payload.listName });
-        } catch (e) {
-          setStatus({
-            state: 'error',
-            reason: e instanceof Error ? e.message : 'Fehler beim Speichern',
-            retryable: false,
-          });
+        if (newList) {
+          console.log("[receive] saved successfully, new list id:", newList.id)
+          setStatus({ state: "success", listId: newList.id, listName: newList.name })
+          qc.invalidateQueries({ queryKey: queryKeys.lists() })
+        } else {
+          console.log("[receive] failed to save list")
+          setStatus({ state: "error", reason: "Fehler beim Speichern", retryable: false })
         }
-      });
+      })
 
-      socket.on('error', (err) => {
-        setStatus({ state: 'error', reason: err.message, retryable: true });
-      });
-    });
+      socket.on("error", (err) => {
+        console.log("[receive] socket error:", String(err))
+        setStatus({ state: "error", reason: String(err), retryable: true })
+      })
+    })
 
-    zeroconf.on('error', (err) => {
-      clearTimeout(timeout);
-      setStatus({ state: 'error', reason: err.message, retryable: true });
-    });
+    globalServer = server
 
-    zeroconf.scan(SERVICE_TYPE, 'tcp', 'local.');
-  }, []);
+    server.on("error", (err) => {
+      const reason = String(err)
+      console.log("[receive] server error:", reason)
+      cleanupGlobal()
+      setStatus({ state: "error", reason, retryable: true })
+    })
 
-  const reset = useCallback(() => setStatus({ state: 'idle' }), []);
+    server.listen({ port: TRANSFER_PORT, host: "0.0.0.0", reuseAddress: true }, () => {
+      console.log(`[receive] tcp server listening on port ${TRANSFER_PORT}`)
+      zeroconf.publishService(SERVICE_TYPE, "tcp", "local.", SERVICE_NAME, TRANSFER_PORT)
+      console.log(`[receive] mdns service published: ${SERVICE_NAME}`)
+    })
 
-  return { status, receive, reset };
+    // ---
+    server.on("close", () => {
+      console.log("[receive] server 'close' event fired")
+    })
+  }, [])
+
+  const reset = useCallback(() => {
+    console.log("[receive] reset called")
+    cleanupGlobal()
+    setStatus({ state: "idle" })
+  }, [])
+
+  return { status, receive, reset }
 }

@@ -13,7 +13,7 @@ export function ScreenLayout({ title, showBack, className, ...props }: ScreenLay
     <View className="flex-1 relative">
       <AppHeader title={title} showBack={showBack} />
       <View
-        className={cn("flex-1 bg-background p-4 pb-safe flex-col gap-4", className)}
+        className={cn("flex-1 bg-background p-4 gap-4", className)}
         {...props}
       />
     </View>

@@ -57,7 +57,7 @@ export function useSendList() {
     }
 
     console.log("[send] list loaded:", transferableList.name)
-    globalEncoded = encodePayload(transferableList)
+    globalEncoded = await encodePayload(transferableList)
     console.log("[send] encoded payload size:", globalEncoded.length, "bytes")
 
     const zeroconf = new Zeroconf()

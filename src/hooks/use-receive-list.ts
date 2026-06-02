@@ -113,16 +113,16 @@ export function useReceiveList() {
         cleanupGlobal()
         setStatus({ state: "saving" })
 
-        const payload = decodePayload(chunks)
+        const result = decodePayload(chunks)
 
-        if (!payload) {
+        if (!result) {
           console.log("[receive] failed to decode payload")
           setStatus({ state: "error", reason: "Daten konnten nicht gelesen werden", retryable: true })
           return
         }
 
-        console.log("[receive] decoded payload, list name:", payload.name)
-        const newList = await saveTransferedList(payload)
+        console.log("[receive] decoded payload, list name:", result.payload.name)
+        const newList = await saveTransferedList(result.payload, result.images)
 
         if (newList) {
           console.log("[receive] saved successfully, new list id:", newList.id)

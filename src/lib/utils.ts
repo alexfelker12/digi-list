@@ -1,43 +1,43 @@
 import { db, items, ListItem, parseImageUris, unitMap } from "@/server/db";
-import { Directory, File, Paths } from 'expo-file-system';
+import { Directory, File, Paths } from 'expo-file-system/next';
 import { getItemAsync, setItemAsync } from 'expo-secure-store';
 
 
-const IMAGES_DIR_NAME = 'images';
-const CLEANUP_KEY = 'last_cleanup_at';
-const ONE_DAY_MS = 24 * 60 * 60 * 1000;
+export const IMAGES_DIR_NAME = 'images';
+export const CLEANUP_KEY = 'last_cleanup_at';
+export const ONE_DAY_MS = 24 * 60 * 60 * 1000;
 
-export function resolveImageUri(filename: string): string {
-  return new File(Paths.document, `${IMAGES_DIR_NAME}/${filename}`).uri;
+export function getImageFile(filename: string) {
+  return new File(Paths.document, IMAGES_DIR_NAME, filename);
 }
 
-export function getDisplayUri(uriOrFilename: string): string {
+export function getDisplayUri(uriOrFilename: string) {
   return uriOrFilename.startsWith('file://') || uriOrFilename.startsWith('content://')
     ? uriOrFilename
-    : resolveImageUri(uriOrFilename);
+    : getImageFile(uriOrFilename).uri;
 }
 
-function ensureImagesDir() {
+export function ensureImagesDir() {
   const dir = new Directory(Paths.document, IMAGES_DIR_NAME);
   if (!dir.exists) dir.create();
 }
 
-export async function saveImageToAppStorage(uri: string): Promise<string> {
+export async function saveImageToAppStorage(uri: string) {
   ensureImagesDir();
   const filename = `${Date.now()}_${Math.random().toString(36).slice(2)}.jpg`;
-  new File(uri).copy(new File(Paths.document, `${IMAGES_DIR_NAME}/${filename}`));
+  new File(uri).copy(getImageFile(filename));
   return filename;
 }
 
-export function deleteImageFromAppStorage(filename: string): void {
+export function deleteImageFromAppStorage(filename: string) {
   // only delete app storage images
   if (filename.startsWith('file://') || filename.startsWith('content://')) return;
-  const file = new File(Paths.document, `${IMAGES_DIR_NAME}/${filename}`);
+  const file = getImageFile(filename);
   if (file.exists) file.delete();
 }
 
 // returns filenames that were saved successfully
-export async function persistImages(uris: string[]): Promise<string[]> {
+export async function persistImages(uris: string[]) {
   const results = await Promise.allSettled(
     uris.map((uri) => {
       if (!uri.startsWith('file://') && !uri.startsWith('content://')) {
@@ -56,7 +56,7 @@ export async function persistImages(uris: string[]): Promise<string[]> {
 export function diffImageUris(
   previous: string[],
   next: string[]
-): { added: string[]; removed: string[] } {
+) {
   return {
     added: next.filter((uri) => !previous.includes(uri)),
     removed: previous.filter((uri) => !next.includes(uri)),
@@ -64,7 +64,7 @@ export function diffImageUris(
 }
 
 
-async function cleanupOrphanedImages(): Promise<void> {
+async function cleanupOrphanedImages() {
   const dir = new Directory(Paths.document, IMAGES_DIR_NAME)
   if (!dir.exists) return
 
@@ -88,7 +88,7 @@ async function cleanupOrphanedImages(): Promise<void> {
   }
 }
 
-export async function cleanupOrphanedImagesIfNeeded(): Promise<void> {
+export async function cleanupOrphanedImagesIfNeeded() {
   const last = await getItemAsync(CLEANUP_KEY)
   const lastTs = last ? parseInt(last) : 0
   if (Date.now() - lastTs < ONE_DAY_MS) return

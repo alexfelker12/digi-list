@@ -1,25 +1,43 @@
-import { TransferPayload } from "@/lib/transfer/tcp-transfer";
+import { resolveListName, TransferPayload } from "@/lib/transfer/tcp-transfer";
+import { ensureImagesDir, getImageFile } from "@/lib/utils";
 import { eq } from "drizzle-orm";
 import { db, items, List, listItems, lists, stringifyImageUris } from "../db";
+
 
 export type DuplicateResolution = "keep" | "replace"
 
 export async function saveTransferedList(
   data: TransferPayload,
-  //* for now, always update imageUris from duplicate items
+  images: { filename: string; bytes: Uint8Array }[],
   duplicateResolution: DuplicateResolution = "replace"
 ): Promise<List | undefined> {
+  // write images to filesystem first, outside transaction
+  ensureImagesDir()
+  for (const { filename, bytes } of images) {
+    const file = getImageFile(filename)
+    if (!file.exists) {
+      file.write(bytes)
+      console.log("[save] wrote image:", filename, bytes.length, "bytes")
+    } else {
+      console.log("[save] image already exists, skipping:", filename)
+    }
+  }
+
   return await db.transaction(async (tx) => {
     const { listItems: listItemsWithItem, ...list } = data
 
+    // resolve list name 
+    const existingLists = await tx.select({ name: lists.name }).from(lists)
+    const existingNames = existingLists.map(({ name }) => name)
+    const resolvedName = resolveListName(list.name, existingNames)
+
     const [newList] = await tx.insert(lists)
-      .values({ name: list.name })
+      .values({ name: resolvedName })
       .returning()
 
     for (const listItem of listItemsWithItem) {
       const item = listItem.item
 
-      // check if item with same name already exists
       const [existingItem] = await tx.select()
         .from(items)
         .where(eq(items.name, item.name))
@@ -28,15 +46,12 @@ export async function saveTransferedList(
       let itemId: number
 
       if (existingItem) {
-        console.log("[save] duplicate item found:", item.name, "resolution:", duplicateResolution)
-
+        console.log("[save] duplicate item:", item.name, "resolution:", duplicateResolution)
         if (duplicateResolution === "replace") {
-          // update imageUris of existing item with incoming data
           await tx.update(items)
             .set({ imageUris: stringifyImageUris(item.imageUris) })
             .where(eq(items.id, existingItem.id))
         }
-        // reference the existing item
         itemId = existingItem.id
       } else {
         const [newItem] = await tx.insert(items)
@@ -45,8 +60,7 @@ export async function saveTransferedList(
             imageUris: stringifyImageUris(item.imageUris)
           })
           .returning()
-
-        console.log("[save] new item created:", item.name)
+        console.log("[save] new item:", item.name)
         itemId = newItem.id
       }
 

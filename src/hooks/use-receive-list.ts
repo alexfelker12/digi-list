@@ -36,7 +36,7 @@ function cleanupGlobal() {
   }
 }
 
-type ReceiveStatus =
+export type ReceiveStatus =
   | { state: "idle" }
   | { state: "advertising" }                                              // server running, waiting for sender
   | { state: "pending"; senderName: string; listName: string }            // hello received, waiting for user confirmation
@@ -167,9 +167,10 @@ export function useReceiveList() {
 
     server.listen({ port: TRANSFER_PORT, host: "0.0.0.0", reuseAddress: true }, () => {
       const serviceName = getServiceName()
-      console.log(`[receive] tcp server listening on port ${TRANSFER_PORT}`)
-      zeroconf.publishService(SERVICE_TYPE, "tcp", "local.", serviceName, TRANSFER_PORT, SERVICE_TXT)
+      console.log("[receive] tcp server listening on port:", TRANSFER_PORT)
+      console.log("[receive] server address:", server.address())  // zeigt den tatsächlich gebundenen Port
       console.log(`[receive] mdns service published: ${serviceName}`)
+      zeroconf.publishService(SERVICE_TYPE, "tcp", "local.", serviceName, TRANSFER_PORT, SERVICE_TXT)
     })
   }, [])
 

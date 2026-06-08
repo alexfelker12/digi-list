@@ -1,7 +1,9 @@
 import { getDisplayUri } from "@/lib/utils";
 import { ItemWithUriArray } from "@/server/db";
 import { Image } from "expo-image";
-import { Button, Card, PressableFeedback } from "heroui-native";
+import { Button } from "heroui-native/button";
+import { Card } from "heroui-native/card";
+import { PressableFeedback } from "heroui-native/pressable-feedback";
 import { EllipsisVerticalIcon } from "lucide-react-native";
 import { useState } from "react";
 import { GestureResponderEvent, Pressable } from "react-native";

@@ -7,7 +7,7 @@ import { useSelectItem } from "@/hooks/use-select-item";
 import { parseItem } from "@/lib/queries/_helper";
 import { allItemsQueryOptions, createItemMutationOptions } from "@/lib/queries/item-queries";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Tabs } from "heroui-native";
+import { Tabs } from "heroui-native/tabs";
 import { useState } from "react";
 
 

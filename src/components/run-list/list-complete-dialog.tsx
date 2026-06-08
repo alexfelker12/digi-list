@@ -1,5 +1,6 @@
 import { useListItems } from "@/screens/context/list-items-context";
-import { Button, Dialog } from "heroui-native";
+import { Button } from "heroui-native/button";
+import { Dialog } from "heroui-native/dialog";
 import { useEffect, useState } from "react";
 import { Keyboard, View } from "react-native";
 

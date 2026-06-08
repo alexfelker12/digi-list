@@ -1,4 +1,4 @@
-import { useThemeColor } from "heroui-native";
+import { useThemeColor } from "heroui-native/hooks";
 import { useEffect, useRef } from "react";
 import { Animated, Easing, View } from 'react-native';
 

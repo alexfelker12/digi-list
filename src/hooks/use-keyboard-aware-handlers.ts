@@ -1,4 +1,4 @@
-import { useBottomSheetAwareHandlers } from "heroui-native"
+import { useBottomSheetAwareHandlers } from "heroui-native/hooks"
 
 
 export function useKeyboardAwareHandlers() {

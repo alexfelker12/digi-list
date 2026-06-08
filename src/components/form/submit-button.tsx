@@ -1,5 +1,5 @@
 import { useFormContext } from "@/lib/form/form-context"
-import { Button } from "heroui-native"
+import { Button } from "heroui-native/button"
 import { SaveIcon } from "lucide-react-native"
 import { Icon } from "../icon"
 

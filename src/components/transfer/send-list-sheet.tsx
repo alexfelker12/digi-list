@@ -1,8 +1,11 @@
 import { Text } from '@/components/text';
 import { DiscoveredReceiver, SendStatus, useSendList } from "@/hooks/use-send-list";
 import { ListWithItemCount } from "@/server/db";
-import { Alert, Button, Card, PressableFeedback } from "heroui-native";
+import { Alert } from "heroui-native/alert";
 import { BottomSheet } from 'heroui-native/bottom-sheet';
+import { Button } from "heroui-native/button";
+import { Card } from "heroui-native/card";
+import { PressableFeedback } from "heroui-native/pressable-feedback";
 import { Spinner } from "heroui-native/spinner";
 import { SmartphoneIcon, XIcon } from "lucide-react-native";
 import { useCallback, useEffect } from "react";

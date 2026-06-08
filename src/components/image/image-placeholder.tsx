@@ -1,6 +1,6 @@
-import { cn } from "heroui-native";
 import { ImageOffIcon } from "lucide-react-native";
 import { View } from "react-native";
+import { cn } from "tailwind-variants";
 import { Icon } from "../icon";
 
 

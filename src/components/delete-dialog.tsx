@@ -1,5 +1,6 @@
 import { SQLiteRunResult } from "expo-sqlite";
-import { Button, Dialog } from "heroui-native";
+import { Button } from "heroui-native/button";
+import { Dialog } from "heroui-native/dialog";
 import { Trash2Icon } from "lucide-react-native";
 import React from "react";
 import { Keyboard, View } from "react-native";

@@ -1,5 +1,7 @@
 import { ListWithItemCount } from "@/server/db";
-import { Button, Card, PressableFeedback } from "heroui-native";
+import { Button } from "heroui-native/button";
+import { Card } from "heroui-native/card";
+import { PressableFeedback } from "heroui-native/pressable-feedback";
 import { EllipsisVerticalIcon } from 'lucide-react-native';
 import { GestureResponderEvent } from "react-native";
 import { Icon } from "../icon";

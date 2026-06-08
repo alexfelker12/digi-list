@@ -1,4 +1,4 @@
-import { SearchField } from "heroui-native";
+import { SearchField } from "heroui-native/search-field";
 import { cn } from "tailwind-variants";
 
 

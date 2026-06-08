@@ -1,8 +1,14 @@
 import { useFieldContext } from "@/lib/form/form-context";
 import { unitMap, UNITS, type Unit } from '@/server/db/schema';
-import { Button, cn, FieldError, Label, Select, Separator, TextField } from "heroui-native";
+import { Button } from "heroui-native/button";
+import { FieldError } from "heroui-native/field-error";
+import { Label } from "heroui-native/label";
+import { Select } from "heroui-native/select";
+import { Separator } from "heroui-native/separator";
+import { TextField } from "heroui-native/text-field";
 import React, { useState } from "react";
 import { Keyboard } from "react-native";
+import { cn } from "tailwind-variants";
 
 
 interface NumberFieldProps {

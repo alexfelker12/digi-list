@@ -1,6 +1,10 @@
 import { useKeyboardAwareHandlers } from "@/hooks/use-keyboard-aware-handlers";
 import { useFieldContext } from "@/lib/form/form-context";
-import { Button, FieldError, InputGroup, Label, TextField } from "heroui-native";
+import { Button } from "heroui-native/button";
+import { FieldError } from "heroui-native/field-error";
+import { InputGroup } from "heroui-native/input-group";
+import { Label } from "heroui-native/label";
+import { TextField } from "heroui-native/text-field";
 import { MinusIcon, PlusIcon } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { Icon } from "../icon";

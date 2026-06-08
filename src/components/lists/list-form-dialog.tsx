@@ -1,4 +1,4 @@
-import { Dialog } from "heroui-native";
+import { Dialog } from "heroui-native/dialog";
 import { Keyboard, View } from "react-native";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { ListForm, ListFormProps } from "./list-form";

@@ -7,7 +7,7 @@ import { listItemsQueryOptions } from "@/lib/queries/list-item-queries";
 import { getPurchaseAmount } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
-import { Separator } from "heroui-native";
+import { Separator } from "heroui-native/separator";
 import { ActivityIndicator, FlatList, View } from "react-native";
 import { ListItemsProvider } from "./context/list-items-context";
 import { RunListItemProvider } from "./context/run-list-item-context";

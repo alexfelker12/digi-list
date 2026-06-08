@@ -1,5 +1,5 @@
-import { cn } from "heroui-native";
 import { LucideIcon as LucideIconComponent, LucideProps } from "lucide-react-native";
+import { cn } from "tailwind-variants";
 import { useResolveClassNames } from "uniwind";
 
 

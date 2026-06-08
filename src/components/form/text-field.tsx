@@ -1,6 +1,9 @@
 import { useKeyboardAwareHandlers } from "@/hooks/use-keyboard-aware-handlers";
 import { useFieldContext } from "@/lib/form/form-context";
-import { FieldError, Input, Label, TextField } from "heroui-native";
+import { FieldError } from "heroui-native/field-error";
+import { Input } from "heroui-native/input";
+import { Label } from "heroui-native/label";
+import { TextField } from "heroui-native/text-field";
 
 
 interface TextFieldProps {

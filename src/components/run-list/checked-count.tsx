@@ -1,5 +1,7 @@
 import { useListItems } from "@/screens/context/list-items-context";
-import { Chip, Skeleton, useThemeColor } from "heroui-native";
+import { Chip } from "heroui-native/chip";
+import { useThemeColor } from "heroui-native/hooks";
+import { Skeleton } from "heroui-native/skeleton";
 import { CircleCheckBigIcon, CircleIcon } from "lucide-react-native";
 import { View } from "react-native";
 import Animated, { Easing, interpolate, interpolateColor, useAnimatedStyle, useDerivedValue, withTiming } from 'react-native-reanimated';

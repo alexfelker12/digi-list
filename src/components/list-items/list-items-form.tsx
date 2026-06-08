@@ -5,8 +5,9 @@ import { getDisplayUri } from "@/lib/utils";
 import { listItemEditSchema, ListItemEditValues, ListItemInsert, ListItemsFormValues, listItemsInsertSchema, Unit, unitMap } from "@/server/db/schema";
 import { Image } from "expo-image";
 import { router } from "expo-router";
-import { BottomSheet, Card, cn } from "heroui-native";
+import { BottomSheet } from "heroui-native/bottom-sheet";
 import { Button } from "heroui-native/button";
+import { Card } from "heroui-native/card";
 import { useAtom } from "jotai";
 import { PlusIcon, Trash2Icon } from "lucide-react-native";
 import { useEffect, useState } from "react";
@@ -15,6 +16,7 @@ import ReorderableList, {
   ReorderableListRenderItemInfo, ReorderableListReorderEvent,
   reorderItems, useIsActive, useReorderableDrag
 } from "react-native-reorderable-list";
+import { cn } from "tailwind-variants";
 import { EmptyListIndicator } from "../empty-list-indicator";
 import { Icon } from "../icon";
 import { ImagePlaceholder } from "../image/image-placeholder";

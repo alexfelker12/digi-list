@@ -1,11 +1,12 @@
 // components/ImageGalleryView.tsx
 import { getDisplayUri } from "@/lib/utils";
 import { Image } from "expo-image";
-import { Button, cn } from "heroui-native";
+import { Button } from "heroui-native/button";
 import { XIcon } from "lucide-react-native";
 import React, { useCallback, useRef, useState } from "react";
 import { View } from "react-native";
 import Gallery, { GalleryRef } from "react-native-awesome-gallery";
+import { cn } from "tailwind-variants";
 import { Icon } from "../icon";
 
 

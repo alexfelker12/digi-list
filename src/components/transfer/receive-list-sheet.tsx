@@ -1,7 +1,8 @@
 import { ReceiveStatus, useReceiveList } from "@/hooks/use-receive-list";
 import { router } from "expo-router";
-import { Alert, Button } from "heroui-native";
+import { Alert } from "heroui-native/alert";
 import { BottomSheet } from 'heroui-native/bottom-sheet';
+import { Button } from "heroui-native/button";
 import { XIcon } from "lucide-react-native";
 import { useEffect } from "react";
 import { View } from "react-native";

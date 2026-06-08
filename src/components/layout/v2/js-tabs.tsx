@@ -1,7 +1,7 @@
 import { HapticTab } from "@/components/haptic-tab";
 import { Icon } from "@/components/icon";
 import { Tabs } from "expo-router";
-import { useThemeColor } from "heroui-native";
+import { useThemeColor } from "heroui-native/hooks";
 import { DownloadIcon, NotebookTextIcon, TablePropertiesIcon } from "lucide-react-native";
 import { View } from "react-native";
 

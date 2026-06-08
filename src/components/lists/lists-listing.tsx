@@ -3,10 +3,12 @@ import { deleteListMutationOptions, updateListMutationOptions } from "@/lib/quer
 import { ListWithItemCount } from "@/server/db";
 import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { cn, Menu, Separator } from "heroui-native";
+import { Menu } from "heroui-native/menu";
+import { Separator } from "heroui-native/separator";
 import { NotebookPenIcon, PencilIcon, SendIcon, Trash2Icon } from "lucide-react-native";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, FlatList, GestureResponderEvent, ListRenderItem, View } from "react-native";
+import { cn } from "tailwind-variants";
 import { DeleteDialog } from "../delete-dialog";
 import { Icon } from "../icon";
 import { SendListSheet } from "../transfer/send-list-sheet";

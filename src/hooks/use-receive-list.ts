@@ -14,23 +14,17 @@ let globalZeroconf: Zeroconf | null = null
 let globalSocket: TcpSocket.Socket | null = null  // track active connection socket
 
 function cleanupGlobal() {
-  console.log("[receive] running global cleanup")
   if (globalSocket) {
-    console.log("[receive] destroying active socket")
     globalSocket.destroy()
     globalSocket = null
   }
   if (globalServer) {
-    console.log("[receive] closing server")
     globalServer.close(() => {
-      console.log("[receive] server close callback fired")
     })
     globalServer = null
   } else {
-    console.log("[receive] no global server to close")
   }
   if (globalZeroconf) {
-    console.log("[receive] unpublishing mdns service")
     globalZeroconf.unpublishService(getServiceName())
     globalZeroconf = null
   }
@@ -50,7 +44,6 @@ export function useReceiveList() {
   const qc = useQueryClient()
 
   const receive = useCallback(() => {
-    console.log("[receive] starting - cleaning up any previous session first")
     cleanupGlobal()
 
     setStatus({ state: "advertising" })
@@ -59,7 +52,6 @@ export function useReceiveList() {
     globalZeroconf = zeroconf
 
     const server = TcpSocket.createServer((socket) => {
-      console.log("[receive] sender connected:", socket.remoteAddress)
       globalSocket = socket
 
       let handshakeDone = false
@@ -71,14 +63,12 @@ export function useReceiveList() {
         if (!handshakeDone) {
           // accumulate until we have a full hello message
           const text = chunk.toString("utf8")
-          console.log("[receive] handshake data:", text)
 
           if (text.startsWith(HANDSHAKE_HELLO)) {
             try {
               // format: "HELLO\n{...json...}\n"
               const jsonPart = text.split("\n")[1]
               const hello = JSON.parse(jsonPart) as HelloMessage
-              console.log("[receive] hello from:", hello.senderName, "list:", hello.listName)
 
               // stop advertising - we have a sender
               zeroconf.unpublishService(getServiceName())
@@ -87,7 +77,6 @@ export function useReceiveList() {
               // show confirmation ui to user - do not respond yet
               setStatus({ state: "pending", senderName: hello.senderName, listName: hello.listName })
             } catch (e) {
-              console.log("[receive] failed to parse hello:", e)
               socket.write(`${HANDSHAKE_REJECT}\n`)
               socket.destroy()
             }
@@ -96,7 +85,6 @@ export function useReceiveList() {
         }
 
         // handshake done, accumulate payload chunks
-        console.log(`[receive] got chunk: ${chunk.length} bytes`)
         chunks = Buffer.concat([chunks, chunk])
       })
 
@@ -104,49 +92,40 @@ export function useReceiveList() {
         globalSocket = null
         if (!handshakeDone) {
           // sender disconnected before handshake completed
-          console.log("[receive] socket closed before handshake")
           setStatus({ state: "advertising" })
           return
         }
 
-        console.log(`[receive] connection closed, total bytes: ${chunks.length}`)
         cleanupGlobal()
         setStatus({ state: "saving" })
 
         const result = decodePayload(chunks)
 
         if (!result) {
-          console.log("[receive] failed to decode payload")
           setStatus({ state: "error", reason: "Daten konnten nicht gelesen werden", retryable: true })
           return
         }
 
-        console.log("[receive] decoded payload, list name:", result.payload.name)
         const newList = await saveTransferedList(result.payload, result.images)
 
         if (newList) {
-          console.log("[receive] saved successfully, new list id:", newList.id)
           setStatus({ state: "success", listId: newList.id, listName: newList.name })
           qc.invalidateQueries({ queryKey: queryKeys.lists() })
         } else {
-          console.log("[receive] failed to save list")
           setStatus({ state: "error", reason: "Fehler beim Speichern", retryable: false })
         }
       })
 
       socket.on("error", (err) => {
-        console.log("[receive] socket error:", String(err))
         setStatus({ state: "error", reason: String(err), retryable: true })
       });
 
       // called by accept() below - sets handshakeDone and sends ACCEPT
       (socket as any).__accept = () => {
         handshakeDone = true
-        console.log("[receive] sending ACCEPT")
         socket.write(`${HANDSHAKE_ACCEPT}\n`)
       };
       (socket as any).__reject = () => {
-        console.log("[receive] sending REJECT")
         socket.write(`${HANDSHAKE_REJECT}\n`)
         socket.destroy()
       };
@@ -156,37 +135,28 @@ export function useReceiveList() {
 
     server.on("error", (err) => {
       const reason = String(err)
-      console.log("[receive] server error:", reason)
       cleanupGlobal()
       setStatus({ state: "error", reason, retryable: true })
     })
 
     server.on("close", () => {
-      console.log("[receive] server 'close' event fired")
     })
 
     server.listen({ port: TRANSFER_PORT, host: "0.0.0.0", reuseAddress: true }, () => {
       const serviceName = getServiceName()
-      console.log("[receive] tcp server listening on port:", TRANSFER_PORT)
-      console.log("[receive] server address:", server.address())  // zeigt den tatsächlich gebundenen Port
-      console.log(`[receive] mdns service published: ${serviceName}`)
       zeroconf.publishService(SERVICE_TYPE, "tcp", "local.", serviceName, TRANSFER_PORT, SERVICE_TXT)
     })
   }, [])
 
   const accept = useCallback(() => {
-    console.log("[receive] user accepted transfer")
     if (globalSocket) {
-      // globalSocket.write(`${HANDSHAKE_ACCEPT}\n`)
       ; (globalSocket as any).__accept?.()
       setStatus({ state: "receiving" })
     }
   }, [])
 
   const reject = useCallback(() => {
-    console.log("[receive] user rejected transfer")
     if (globalSocket) {
-      // globalSocket.write(`${HANDSHAKE_REJECT}\n`)
       ; (globalSocket as any).__reject?.()
       globalSocket = null
     }
@@ -195,7 +165,6 @@ export function useReceiveList() {
   }, [])
 
   const reset = useCallback(() => {
-    console.log("[receive] reset called")
     cleanupGlobal()
     setStatus({ state: "idle" })
   }, [])

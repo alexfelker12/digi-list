@@ -14,8 +14,6 @@ import { ImageViewerModal } from "../image/image-viewer-modal";
 import { Text } from "../text";
 
 
-// TODO: save image from gallery to app storage
-// TODO: save images only when submitting item form
 // TODO:? additionally save assetId to block duplicate images saves
 export function ImageFieldComponent() {
   const field = useFieldContext<string[]>()

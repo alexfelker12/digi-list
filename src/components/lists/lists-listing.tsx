@@ -7,8 +7,9 @@ import { Menu } from "heroui-native/menu";
 import { Separator } from "heroui-native/separator";
 import { NotebookPenIcon, PencilIcon, SendIcon, Trash2Icon } from "lucide-react-native";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, FlatList, GestureResponderEvent, ListRenderItem, View } from "react-native";
+import { FlatList, GestureResponderEvent, ListRenderItem, View } from "react-native";
 import { cn } from "tailwind-variants";
+import { CenteredSpinner } from "../centered-spinner";
 import { DeleteDialog } from "../delete-dialog";
 import { Icon } from "../icon";
 import { SendListSheet } from "../transfer/send-list-sheet";
@@ -74,11 +75,11 @@ export function ListsListing({ data, isPending, className, onPress }: ListsListi
         keyExtractor={keyExtractor}
         removeClippedSubviews
         ListEmptyComponent={isPending ? (
-          <ActivityIndicator size="large" className="text-accent" />
+          <CenteredSpinner />
         ) : (
           <EmptyListIndicator message="Noch keine Einkaufslisten erstellt" />
         )}
-        contentContainerClassName={cn("gap-2 px-1 pb-1", className)}
+        contentContainerClassName={cn("grow gap-2 px-1 pb-1", className)}
       />
 
       <Menu

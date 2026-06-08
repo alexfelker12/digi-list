@@ -1,9 +1,9 @@
+import { CenteredSpinner } from "@/components/centered-spinner";
 import { ListItemsForm } from "@/components/list-items/list-items-form";
 import { ScreenLayout } from "@/components/screen-layout";
 import { listItemsQueryOptions, updateListItemsMutationOptions } from "@/lib/queries/list-item-queries";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
-import { ActivityIndicator } from "react-native";
 
 
 export default function ListDetailScreen() {
@@ -18,7 +18,7 @@ export default function ListDetailScreen() {
 
   return (
     <ScreenLayout title={listName ?? "Details"} showBack className="pb-0">
-      {isPending && <ActivityIndicator size="large" className="text-accent" />}
+      {isPending && <CenteredSpinner />}
 
       {data && (
         <ListItemsForm

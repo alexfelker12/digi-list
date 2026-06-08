@@ -6,8 +6,9 @@ import { Menu } from "heroui-native/menu";
 import { Separator } from "heroui-native/separator";
 import { SquarePenIcon, Trash2Icon } from "lucide-react-native";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, FlatList, GestureResponderEvent, ListRenderItem, View } from "react-native";
+import { FlatList, GestureResponderEvent, ListRenderItem, View } from "react-native";
 import { cn } from "tailwind-variants";
+import { CenteredSpinner } from "../centered-spinner";
 import { DeleteDialog } from "../delete-dialog";
 import { Icon } from "../icon";
 import { Text } from "../text";
@@ -60,7 +61,7 @@ export function ProductsListing({ data, searchValue, isPending, className, onPre
         keyExtractor={keyExtractor}
         removeClippedSubviews
         ListEmptyComponent={isPending ? (
-          <ActivityIndicator size="large" className="text-accent" />
+          <CenteredSpinner />
         ) : (
           !!searchValue ? (
             <View className="flex-1 justify-center items-center flex-row p-4">
@@ -72,7 +73,7 @@ export function ProductsListing({ data, searchValue, isPending, className, onPre
             <EmptyListIndicator message="Noch keine Produkte erstellt" />
           )
         )}
-        contentContainerClassName={cn("gap-2 px-1 pb-1", className)}
+        contentContainerClassName={cn("grow gap-2 px-1 pb-1", className)}
       />
 
       <Menu

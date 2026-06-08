@@ -44,11 +44,12 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <SQLiteProvider databaseName="digi-list.db">
-        <MigrationsGuard>
 
-          <GestureHandlerRootView className="flex-1">
-            <KeyboardProvider>
-              <HeroUINativeProvider>
+        <GestureHandlerRootView className="flex-1">
+          <KeyboardProvider>
+            <HeroUINativeProvider>
+
+              <MigrationsGuard>
                 <StatusBar style="auto" />
 
                 <JsStack screenOptions={jsStackScreenOptions}>
@@ -59,11 +60,12 @@ export default function RootLayout() {
                   <JsStack.Screen name="list/[id]/edit/item/[itemId]" options={{ title: "Produkt bearbeiten" }} />
                 </JsStack>
 
-              </HeroUINativeProvider>
-            </KeyboardProvider>
-          </GestureHandlerRootView>
+              </MigrationsGuard>
 
-        </MigrationsGuard>
+            </HeroUINativeProvider>
+          </KeyboardProvider>
+        </GestureHandlerRootView>
+
       </SQLiteProvider>
     </QueryClientProvider>
   );

@@ -2,9 +2,10 @@ import { useListItems } from "@/screens/context/list-items-context";
 import { SQLiteRunResult } from "expo-sqlite";
 import { Button } from "heroui-native/button";
 import { Dialog } from "heroui-native/dialog";
+import { Spinner } from "heroui-native/spinner";
 import { ListRestartIcon, RotateCcwIcon } from "lucide-react-native";
 import { useState } from "react";
-import { ActivityIndicator, Keyboard, View } from "react-native";
+import { Keyboard, View } from "react-native";
 import { cn } from "tailwind-variants";
 import { Icon } from "../icon";
 
@@ -66,7 +67,7 @@ export function ResetListDialog({ onConfirm, actionPending }: ResetListDialogPro
               }}
               isDisabled={actionPending}
             >
-              {actionPending ? <ActivityIndicator size={20} /> : <Icon icon={ListRestartIcon} />}
+              {actionPending ? <Spinner /> : <Icon icon={ListRestartIcon} />}
               <Button.Label>Zurücksetzen</Button.Label>
             </Button>
             <Button

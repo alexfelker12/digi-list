@@ -1,3 +1,4 @@
+import { CenteredSpinner } from "@/components/centered-spinner";
 import { EmptyListIndicator } from "@/components/empty-list-indicator";
 import { CheckedCount } from "@/components/run-list/checked-count";
 import { ResetList } from "@/components/run-list/reset-list";
@@ -8,7 +9,7 @@ import { getPurchaseAmount } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { useLocalSearchParams } from "expo-router";
 import { Separator } from "heroui-native/separator";
-import { ActivityIndicator, FlatList, View } from "react-native";
+import { FlatList, View } from "react-native";
 import { ListItemsProvider } from "./context/list-items-context";
 import { RunListItemProvider } from "./context/run-list-item-context";
 
@@ -54,11 +55,11 @@ export default function RunListScreen() {
               )
             }}
             ListEmptyComponent={isPending ? (
-              <ActivityIndicator size="large" className="text-accent" />
+              <CenteredSpinner />
             ) : (
               <EmptyListIndicator message={`${listName} hat noch keine Produkte`} />
             )}
-            contentContainerClassName="gap-2 px-1 pb-2"
+            contentContainerClassName="grow gap-2 px-1 pb-2"
           />
         </View>
       </ListItemsProvider>

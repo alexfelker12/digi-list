@@ -5,9 +5,9 @@ import { useEffect } from "react";
 import { cleanupOrphanedImagesIfNeeded } from "@/lib/utils";
 import { db } from "@/server/db";
 import migrations from '@/server/db/migrations/migrations';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
-import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
+// import { useDrizzleStudio } from "expo-drizzle-studio-plugin";
 import { SQLiteProvider } from 'expo-sqlite';
 
 import { HeroUINativeProvider } from 'heroui-native/provider';
@@ -18,7 +18,9 @@ import { JsStack, jsStackScreenOptions } from "@/lib/navigation/js-stack";
 import { StatusBar } from "expo-status-bar";
 
 import { ErrorScreen } from "@/components/error-screen";
+import { ImportToast } from "@/components/import-toast";
 import { LoadingScreen } from "@/components/loading-screen";
+import { queryClient } from "@/lib/query-client";
 
 
 function MigrationsGuard({ children }: { children: React.ReactNode }) {
@@ -37,9 +39,8 @@ function MigrationsGuard({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 
-const queryClient = new QueryClient();
 export default function RootLayout() {
-  useDrizzleStudio(db.$client)
+  // useDrizzleStudio(db.$client)
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -59,6 +60,9 @@ export default function RootLayout() {
                   <JsStack.Screen name="list/[id]/edit/add-item" options={{ title: "Produkt hinzufügen" }} />
                   <JsStack.Screen name="list/[id]/edit/item/[itemId]" options={{ title: "Produkt bearbeiten" }} />
                 </JsStack>
+
+                {/* global import handler */}
+                <ImportToast />
 
               </MigrationsGuard>
 

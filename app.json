@@ -8,9 +8,6 @@
     "scheme": "digilist",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "ios": {
-      "supportsTablet": true
-    },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
@@ -27,7 +24,60 @@
         "android.permission.ACCESS_WIFI_STATE",
         "android.permission.CHANGE_WIFI_STATE",
         "android.permission.ACCESS_NETWORK_STATE"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "category": ["DEFAULT", "BROWSABLE"],
+          "data": [
+            {
+              "scheme": "file",
+              "mimeType": "application/x-digilist"
+            },
+            {
+              "scheme": "content",
+              "mimeType": "application/x-digilist"
+            },
+            {
+              "scheme": "content",
+              "mimeType": "application/octet-stream",
+              "pathPattern": ".*\\.digilist"
+            },
+            {
+              "scheme": "file",
+              "mimeType": "application/octet-stream",
+              "pathPattern": ".*\\.digilist"
+            },
+            {
+              "scheme": "content",
+              "mimeType": "*/*",
+              "pathPattern": ".*\\.digilist"
+            }
+          ]
+        }
       ]
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "CFBundleDocumentTypes": [
+          {
+            "CFBundleTypeName": "Digi List",
+            "CFBundleTypeRole": "Viewer",
+            "LSItemContentTypes": ["com.alexfelker.digilist.list"]
+          }
+        ],
+        "UTImportedTypeDeclarations": [
+          {
+            "UTTypeIdentifier": "com.alexfelker.digilist.list",
+            "UTTypeDescription": "Digi List",
+            "UTTypeConformsTo": ["public.data"],
+            "UTTypeTagSpecification": {
+              "public.filename-extension": ["digilist"]
+            }
+          }
+        ]
+      }
     },
     "web": {
       "output": "static",

@@ -1,11 +1,12 @@
 import { EmptyListIndicator } from "@/components/empty-list-indicator";
+import { useExportList } from "@/hooks/use-export-list";
 import { deleteListMutationOptions, updateListMutationOptions } from "@/lib/queries/list-queries";
 import { ListWithItemCount } from "@/server/db";
 import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
 import { Menu } from "heroui-native/menu";
 import { Separator } from "heroui-native/separator";
-import { NotebookPenIcon, PencilIcon, SendIcon, Trash2Icon } from "lucide-react-native";
+import { NotebookPenIcon, PencilIcon, SendIcon, ShareIcon, Trash2Icon } from "lucide-react-native";
 import { useCallback, useState } from "react";
 import { FlatList, GestureResponderEvent, ListRenderItem, View } from "react-native";
 import { cn } from "tailwind-variants";
@@ -24,6 +25,8 @@ type ListsListingProps = {
   onPress?: (list: ListWithItemCount, event: GestureResponderEvent) => void
 }
 export function ListsListing({ data, isPending, className, onPress }: ListsListingProps) {
+  const { status, exportList } = useExportList()
+
   // open state edit/delete context
   const [selectedList, setSelectedList] = useState<ListWithItemCount | undefined>(undefined)
 
@@ -152,6 +155,25 @@ export function ListsListing({ data, isPending, className, onPress }: ListsListi
             <SendListSheet isOpen={transferOpen} onOpenChange={setTransferOpen}
               list={selectedList}
             />
+
+            {/* share list */}
+            <Menu.Item className="items-start"
+              // onPress={() => setTransferOpen(true)}
+              onPress={() => {
+                if (!selectedList) return;
+                exportList(selectedList.id, selectedList.name)
+              }}
+            >
+              <View className="mt-1">
+                <Icon icon={ShareIcon} className="text-muted" size={16} />
+              </View>
+              <View className="flex-1">
+                <Menu.ItemTitle>Einkaufsliste exportieren</Menu.ItemTitle>
+                <Menu.ItemDescription numberOfLines={1}>
+                  Liste mit einem anderen Handy teilen
+                </Menu.ItemDescription>
+              </View>
+            </Menu.Item>
 
             <Separator className="m-2" />
 

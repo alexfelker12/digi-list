@@ -39,18 +39,13 @@
               "mimeType": "application/x-digilist"
             },
             {
-              "scheme": "content",
-              "mimeType": "application/octet-stream",
-              "pathPattern": ".*\\.digilist"
-            },
-            {
               "scheme": "file",
               "mimeType": "application/octet-stream",
               "pathPattern": ".*\\.digilist"
             },
             {
               "scheme": "content",
-              "mimeType": "*/*",
+              "mimeType": "application/octet-stream",
               "pathPattern": ".*\\.digilist"
             }
           ]

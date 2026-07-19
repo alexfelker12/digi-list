@@ -33,7 +33,7 @@ export function ItemForm({ item, onSubmit }: ItemFormProps) {
     <View className="flex-1 gap-4">
       {/* give this view flex-1 when save button should be at the bottom when scrolling */}
       {/* flex-1 altough forces save button to be at the bottom of the tab. */}
-      <View className="flex-1 -mx-1">
+      <View className="-mx-1">
         <ScrollView
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
